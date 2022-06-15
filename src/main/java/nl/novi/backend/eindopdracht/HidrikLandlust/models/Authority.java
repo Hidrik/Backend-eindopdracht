@@ -1,7 +1,5 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.models;
 
-
-
 import javax.persistence.*;
 import java.io.Serializable;
 

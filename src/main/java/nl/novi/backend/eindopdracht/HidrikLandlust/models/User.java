@@ -14,11 +14,14 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
     private boolean enabled = true;
+
+    @Column()
+    private String email;
 
 
     @OneToMany(
@@ -50,4 +53,11 @@ public class User {
         this.authorities.remove(authority);
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

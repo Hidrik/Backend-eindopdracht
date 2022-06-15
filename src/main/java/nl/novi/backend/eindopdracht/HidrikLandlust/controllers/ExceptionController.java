@@ -2,7 +2,9 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 
 
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.UsernameNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -18,6 +20,18 @@ public class ExceptionController {
 
     }
 
-    /*maak exceptionHandlers voor de 2 nieuwe exceptions*/
+    @ExceptionHandler(value = BadRequestException.class)
+    public ResponseEntity<Object> exception(BadRequestException exception) {
+
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+
+    }
+
+    @ExceptionHandler(value = UsernameNotFoundException.class)
+    public ResponseEntity<Object> exception(UsernameNotFoundException exception) {
+
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+
+    }
 
 }
