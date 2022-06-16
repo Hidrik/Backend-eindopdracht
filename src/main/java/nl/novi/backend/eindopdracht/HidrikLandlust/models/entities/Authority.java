@@ -1,4 +1,6 @@
-package nl.novi.backend.eindopdracht.HidrikLandlust.models;
+package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
+
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.AuthorityKey;
 
 import javax.persistence.*;
 import java.io.Serializable;

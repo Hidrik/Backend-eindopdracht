@@ -1,17 +1,11 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.models;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
-@Entity
-public class Project {
-
-    @Id
-    @Column(name = "project_code", nullable = false)
-    private String projectCode;
-
+@MappedSuperclass
+public abstract class AbstractJobData {
     @Column(nullable = false)
     private String description;
 
@@ -23,22 +17,6 @@ public class Project {
 
     @Column()
     private Integer budget;
-
-    @OneToMany(
-            targetEntity = Assignment.class,
-            mappedBy = "id",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.EAGER)
-    private Set<Assignment> assignments = new HashSet<>();
-
-    public String getProjectCode() {
-        return projectCode;
-    }
-
-    public void setProjectCode(String projectCode) {
-        this.projectCode = projectCode;
-    }
 
     public String getDescription() {
         return description;
@@ -70,17 +48,5 @@ public class Project {
 
     public void setBudget(Integer budget) {
         this.budget = budget;
-    }
-
-    public Set<Assignment> getAssignments() {
-        return this.assignments;
-    }
-
-    public void addAssignment(Assignment assignment) {
-        this.assignments.add(assignment);
-    }
-
-    public void removeAssignment(Assignment assignment) {
-        this.assignments.remove(assignment);
     }
 }

@@ -58,13 +58,13 @@ public class UserController {
 
         userService.updateUser(username, dto);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.accepted().build();
     }
 
     @DeleteMapping(value = "/{username}")
     public ResponseEntity<Object> deleteUser(@PathVariable("username") String username) {
         userService.deleteUser(username);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.accepted().build();
     }
 
     @GetMapping(value = "/{username}/authorities")
@@ -77,10 +77,10 @@ public class UserController {
         try {
             String authorityName = (String) fields.get("authority");
             userService.addAuthority(username, authorityName);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.accepted().build();
         }
         catch (Exception ex) {
-            throw new BadRequestException();
+            throw new BadRequestException(ex.getLocalizedMessage());
         }
     }
 

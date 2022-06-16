@@ -1,7 +1,7 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.Authority;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
 
 import java.util.Set;
 

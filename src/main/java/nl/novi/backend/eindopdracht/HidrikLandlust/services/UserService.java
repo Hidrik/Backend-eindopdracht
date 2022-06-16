@@ -2,18 +2,11 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.UsernameNotFoundException;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.Authority;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.User;
-import nl.novi.backend.eindopdracht.HidrikLandlust.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.User;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Service

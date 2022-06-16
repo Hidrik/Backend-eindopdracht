@@ -1,5 +1,4 @@
-INSERT INTO project
-(project_code, description, progress_percentage, deadline, budget)
+INSERT INTO project(project_code, description, progress_percentage, deadline, budget)
 VALUES
 ('PROJECT001', 'test', 10, '2022-10-01', 1000),
 ('PROJECT002', 'test', 20, '2022-10-02', 2000),

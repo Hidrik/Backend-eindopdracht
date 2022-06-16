@@ -1,12 +1,10 @@
-package nl.novi.backend.eindopdracht.HidrikLandlust.models;
+package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
 
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
-/*annotatie*/
 @Entity
-
 @Table(name = "users")
 public class User {
 
@@ -20,7 +18,7 @@ public class User {
     @Column(nullable = false)
     private boolean enabled = true;
 
-    @Column()
+    @Column(unique = true)
     private String email;
 
 
@@ -32,18 +30,41 @@ public class User {
             fetch = FetchType.EAGER)
     private Set<Authority> authorities = new HashSet<>();
 
+    @OneToOne(
+            targetEntity = Account.class,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER)
+    private Account account;
+
     public String getUsername() { return username; }
     public void setUsername(String username) {
         this.username = username;
     }
+
     public String getPassword() {
         return password;
     }
     public void setPassword(String password) {
         this.password = password;
     }
+
     public boolean isEnabled() { return enabled;}
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
+
+    public Account getAccount() {
+        return account;
+    }
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     public Set<Authority> getAuthorities() { return authorities; }
     public void addAuthority(Authority authority) {
@@ -53,11 +74,7 @@ public class User {
         this.authorities.remove(authority);
     }
 
-    public String getEmail() {
-        return email;
-    }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+
+
 }

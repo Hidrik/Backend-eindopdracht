@@ -1,4 +1,4 @@
-package nl.novi.backend.eindopdracht.HidrikLandlust.models;
+package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
 
 import javax.persistence.*;
 import java.io.File;
@@ -39,7 +39,7 @@ public class Component {
     @Transient
     private File fileData;
 
-    @ManyToMany
+    @ManyToMany(targetEntity = Assignment.class)
     @JoinTable(
             name = "used_components",
             joinColumns = @JoinColumn(name = "component_id"),

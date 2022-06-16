@@ -1,7 +1,7 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.Authority;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

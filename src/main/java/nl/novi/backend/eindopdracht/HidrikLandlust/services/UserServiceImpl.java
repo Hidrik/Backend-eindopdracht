@@ -1,12 +1,10 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
 
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AuthorityDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.UsernameNotFoundException;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.Authority;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.User;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.*;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.User;
 import nl.novi.backend.eindopdracht.HidrikLandlust.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,7 +14,6 @@ import java.util.*;
 
 @Service
 public class UserServiceImpl {
-    /*autowire de juiste repository*/
     @Autowired
     UserRepository userRepository;
 
@@ -47,25 +44,37 @@ public class UserServiceImpl {
         return userRepository.existsById(username);
     }
 
+    public boolean emailExists(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
     public String createUser(UserDto userDto) {
+
+        String username = userDto.getUsername();
+        String email = userDto.getEmail();
+
+        if (userExists(username)) throw new UserAlreadyExistsException(username);
+        if (emailExists(email)) throw new EmailAlreadyInUseException(email);
+
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         User newUser = userRepository.save(toUser(userDto));
         return newUser.getUsername();
     }
 
     public void deleteUser(String username) {
+        if (!userExists(username)) throw new UsernameNotFoundException(username);
         userRepository.deleteById(username);
     }
 
     public void updateUser(String username, UserDto newUser) {
-        if (!userRepository.existsById(username)) throw new BadRequestException();
+        if (!userExists(username)) throw new BadRequestException();
         User user = userRepository.findById(username).get();
-        user.setPassword(newUser.getPassword());
+        user.setPassword(passwordEncoder.encode(newUser.getPassword()));
         userRepository.save(user);
     }
 
     public Set<Authority> getAuthorities(String username) {
-        if (!userRepository.existsById(username)) throw new UsernameNotFoundException(username);
+        if (!userExists(username)) throw new UsernameNotFoundException(username);
         User user = userRepository.findById(username).get();
         UserDto userDto = fromUser(user);
         return userDto.getAuthorities();
@@ -73,18 +82,33 @@ public class UserServiceImpl {
 
     public void addAuthority(String username, String authority) {
 
-        if (!userRepository.existsById(username)) throw new UsernameNotFoundException(username);
+        if (!userExists(username)) throw new UsernameNotFoundException(username);
         User user = userRepository.findById(username).get();
-        user.addAuthority(new Authority(username, authority));
+
+        Authority addAuthority = new Authority(username, authority);
+        if (authorityAlreadyExists(user, addAuthority)) throw new UserAlreadyHasAuthorityException(username, authority);
+        user.addAuthority(addAuthority);
+
         userRepository.save(user);
     }
 
     public void removeAuthority(String username, String authority) {
-        if (!userRepository.existsById(username)) throw new UsernameNotFoundException(username);
+        if (!userExists(username)) throw new UsernameNotFoundException(username);
         User user = userRepository.findById(username).get();
         Authority authorityToRemove = user.getAuthorities().stream().filter((a) -> a.getAuthority().equalsIgnoreCase(authority)).findAny().get();
         user.removeAuthority(authorityToRemove);
         userRepository.save(user);
+    }
+
+    public boolean authorityAlreadyExists(User user, Authority addedAuthority) {
+        boolean returnValue = false;
+        for (Authority currentAuthority : user.getAuthorities()) {
+            if (currentAuthority.getAuthority().equals(addedAuthority.getAuthority())) {
+                returnValue = true;
+                break;
+            }
+        }
+        return returnValue;
     }
 
     public static UserDto fromUser(User user){

@@ -2,7 +2,6 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.payload.AuthenticationRequest;
 import nl.novi.backend.eindopdracht.HidrikLandlust.payload.AuthenticationResponse;
-import nl.novi.backend.eindopdracht.HidrikLandlust.services.AuthenticationServiceImpl;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.CustomUserDetailsService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +27,7 @@ public class AuthenticationController {
     CustomUserDetailsService userDetailsService;
 
     @Autowired
-    AuthenticationServiceImpl authenticationService;
-
-    @Autowired
     JwtUtil jwtUtil;
-
-
-
 
     @GetMapping(value = "/authenticated")
     public ResponseEntity<Object> authenticated(Authentication authentication, Principal principal) {
