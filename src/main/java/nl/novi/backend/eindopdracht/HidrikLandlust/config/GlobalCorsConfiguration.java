@@ -1,4 +1,4 @@
-package nl.novi.backend.eindopdracht.HidrikLandlust.security;
+package nl.novi.backend.eindopdracht.HidrikLandlust.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
