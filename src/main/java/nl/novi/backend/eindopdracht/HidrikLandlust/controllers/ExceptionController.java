@@ -23,12 +23,6 @@ public class ExceptionController {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(value = UsernameNotFoundException.class)
-    public ResponseEntity<Object> exception(UsernameNotFoundException exception) {
-
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
-    }
-
     @ExceptionHandler(value = UserAlreadyExistsException.class)
     public ResponseEntity<Object> exception(UserAlreadyExistsException exception) {
 
@@ -43,6 +37,18 @@ public class ExceptionController {
 
     @ExceptionHandler(value = UserAlreadyHasAuthorityException.class)
     public ResponseEntity<Object> exception(UserAlreadyHasAuthorityException exception) {
+
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(value = AlreadyExistsException.class)
+    public ResponseEntity<Object> exception(AlreadyExistsException exception) {
+
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(value = DateLiesInPastException.class)
+    public ResponseEntity<Object> exception(DateLiesInPastException exception) {
 
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.CONFLICT);
     }

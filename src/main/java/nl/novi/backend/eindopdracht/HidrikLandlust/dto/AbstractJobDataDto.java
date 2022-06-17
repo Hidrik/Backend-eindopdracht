@@ -1,26 +1,14 @@
-package nl.novi.backend.eindopdracht.HidrikLandlust.models;
+package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.time.LocalDate;
 
-@MappedSuperclass
-public abstract class AbstractJobData {
-    @Column(nullable = false)
+public class AbstractJobDataDto {
     private String description;
 
-    @Column(name = "progress_percentage", nullable = false)
-
-    @Min(value = 0, message = "Progress can't be less than 0%")
-    @Max(value = 100, message = "Progress can't be higher than 100%")
     private Byte progressPercentage;
-
-    @Column(nullable = false)
     private LocalDate deadline;
-
-    @Column()
     private Integer budget;
 
     public String getDescription() {

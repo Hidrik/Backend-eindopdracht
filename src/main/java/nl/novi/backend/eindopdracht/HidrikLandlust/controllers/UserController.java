@@ -1,9 +1,11 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.services.UserService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.UserServiceImpl;
+import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -18,9 +20,7 @@ import java.util.Map;
 public class UserController {
 
     @Autowired
-    UserServiceImpl userService;
-
-
+    UserService userService;
 
     @GetMapping(value = "")
     public ResponseEntity<List<UserDto>> getUsers() {
@@ -74,14 +74,9 @@ public class UserController {
 
     @PostMapping(value = "/{username}/authorities")
     public ResponseEntity<Object> addUserAuthority(@PathVariable("username") String username, @RequestBody Map<String, Object> fields) {
-        try {
-            String authorityName = (String) fields.get("authority");
-            userService.addAuthority(username, authorityName);
-            return ResponseEntity.accepted().build();
-        }
-        catch (Exception ex) {
-            throw new BadRequestException(ex.getLocalizedMessage());
-        }
+        String authorityName = (String) fields.get("authority");
+        userService.addAuthority(username, authorityName);
+        return ResponseEntity.accepted().build();
     }
 
     @DeleteMapping(value = "/{username}/authorities/{authority}")

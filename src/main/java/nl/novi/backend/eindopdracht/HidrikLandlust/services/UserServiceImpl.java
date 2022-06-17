@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class UserServiceImpl {
+public class UserServiceImpl implements UserService {
     @Autowired
     UserRepository userRepository;
 
@@ -24,7 +24,7 @@ public class UserServiceImpl {
         List<UserDto> collection = new ArrayList<>();
         List<User> list = userRepository.findAll();
         for (User user : list) {
-            collection.add(fromUser(user));
+            collection.add(UserService.fromUser(user));
         }
         return collection;
     }
@@ -33,9 +33,9 @@ public class UserServiceImpl {
         UserDto dto;
         Optional<User> user = userRepository.findById(username);
         if (user.isPresent()){
-            dto = fromUser(user.get());
+            dto = UserService.fromUser(user.get());
         }else {
-            throw new UsernameNotFoundException(username);
+            throw new RecordNotFoundException("User " + username + "does not exists.");
         }
         return dto;
     }
@@ -57,43 +57,41 @@ public class UserServiceImpl {
         if (emailExists(email)) throw new EmailAlreadyInUseException(email);
 
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        User newUser = userRepository.save(toUser(userDto));
+        User newUser = userRepository.save(UserService.toUser(userDto));
         return newUser.getUsername();
     }
 
     public void deleteUser(String username) {
-        if (!userExists(username)) throw new UsernameNotFoundException(username);
+        if (!userExists(username)) throw new RecordNotFoundException("User " + username + "does not exists.");
         userRepository.deleteById(username);
     }
 
     public void updateUser(String username, UserDto newUser) {
-        if (!userExists(username)) throw new BadRequestException();
+        if (!userExists(username)) throw new RecordNotFoundException("User " + username + "does not exists.");
         User user = userRepository.findById(username).get();
         user.setPassword(passwordEncoder.encode(newUser.getPassword()));
         userRepository.save(user);
     }
 
     public Set<Authority> getAuthorities(String username) {
-        if (!userExists(username)) throw new UsernameNotFoundException(username);
+        if (!userExists(username)) throw new RecordNotFoundException("User " + username + "does not exists.");
         User user = userRepository.findById(username).get();
-        UserDto userDto = fromUser(user);
+        UserDto userDto = UserService.fromUser(user);
         return userDto.getAuthorities();
     }
 
     public void addAuthority(String username, String authority) {
-
-        if (!userExists(username)) throw new UsernameNotFoundException(username);
+        if (!userExists(username)) throw new RecordNotFoundException("User " + username + "does not exists.");
         User user = userRepository.findById(username).get();
-
         Authority addAuthority = new Authority(username, authority);
+
         if (authorityAlreadyExists(user, addAuthority)) throw new UserAlreadyHasAuthorityException(username, authority);
         user.addAuthority(addAuthority);
-
         userRepository.save(user);
     }
 
     public void removeAuthority(String username, String authority) {
-        if (!userExists(username)) throw new UsernameNotFoundException(username);
+        if (!userExists(username)) throw new RecordNotFoundException("User " + username + "does not exists.");
         User user = userRepository.findById(username).get();
         Authority authorityToRemove = user.getAuthorities().stream().filter((a) -> a.getAuthority().equalsIgnoreCase(authority)).findAny().get();
         user.removeAuthority(authorityToRemove);
@@ -109,31 +107,6 @@ public class UserServiceImpl {
             }
         }
         return returnValue;
-    }
-
-    public static UserDto fromUser(User user){
-
-        var dto = new UserDto();
-
-        dto.username = user.getUsername();
-        dto.password = user.getPassword();
-        dto.enabled = user.isEnabled();
-        dto.email = user.getEmail();
-        dto.authorities = user.getAuthorities();
-
-        return dto;
-    }
-
-    public User toUser(UserDto userDto) {
-
-        var user = new User();
-
-        user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
-        user.setEnabled(userDto.getEnabled());
-        user.setEmail(userDto.getEmail());
-
-        return user;
     }
 
 }

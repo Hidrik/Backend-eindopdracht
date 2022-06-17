@@ -8,9 +8,12 @@ import java.util.Set;
 
 @Entity
 public class Project extends AbstractJobData {
-
     @Id
-    @Column(name = "project_code", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
+    @Column(name = "project_code", nullable = false, unique = true)
     private String projectCode;
 
     @OneToMany(
@@ -26,7 +29,15 @@ public class Project extends AbstractJobData {
             name = "project_members",
             joinColumns = @JoinColumn(name = "project_id"),
             inverseJoinColumns = @JoinColumn(name = "account_id"))
-    Set<Account> accounts;
+    Set<Account> accounts = new HashSet<>();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getProjectCode() {
         return projectCode;

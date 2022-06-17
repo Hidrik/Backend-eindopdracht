@@ -47,30 +47,36 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
-//    @Override
-//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//        auth
-//                .jdbcAuthentication()
-//                .passwordEncoder(passwordEncoder())
-//                .dataSource(dataSource)
-//                .usersByUsernameQuery("select username, password, enabled from users where username=?")
-//                .authoritiesByUsernameQuery("select username, role from users where username=?");
-//    }
+/*    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth
+                .jdbcAuthentication()
+                .passwordEncoder(passwordEncoder())
+                .usersByUsernameQuery("select username, password from users where username=?")
+                .authoritiesByUsernameQuery("select username, authority from authorities where username=?");
+    }*/
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        //JWT token authentication
         http
                 .csrf().disable()
                 .formLogin().disable()
+                //UserController endpoints
                 .authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/users").permitAll()
-                .antMatchers(HttpMethod.GET,"/users").hasAuthority("ROLE_ADMIN")
-                .antMatchers("/users/**").hasAuthority("ROLE_ADMIN")
                 .antMatchers(HttpMethod.POST,"/authenticate").permitAll()
+                .antMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET,"/users").hasRole("ADMIN")
+                .antMatchers("/users/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.GET,"/authenticated").authenticated()
-                .anyRequest().denyAll()
+                .and()
+                //ProjectController endpoints
+                .authorizeRequests()
+                .antMatchers(HttpMethod.GET, "/projects").hasAnyRole("USER", "ADMIN")
+                .antMatchers(HttpMethod.POST, "/projects").hasAuthority("ROLE_ADMIN")
+                .and()
+                .authorizeRequests()
+                .anyRequest().authenticated()
                 .and()
                 .cors()
                 .and()

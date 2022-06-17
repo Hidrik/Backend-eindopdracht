@@ -21,7 +21,7 @@ public class Account {
     private String employeeFunction;
 
     @ManyToMany(mappedBy = "accounts")
-    Set<Project> projects;
+    Set<Project> projects = new HashSet<>();
 
     @OneToMany(
             targetEntity = Assignment.class,
