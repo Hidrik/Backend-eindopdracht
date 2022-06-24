@@ -44,13 +44,15 @@ public class UserController {
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto dto) {
 
 
-        String newUsername = userService.createUser(dto);
-        userService.addAuthority(newUsername, "ROLE_USER");
+        UserDto newUser = userService.createUser(dto);
+        userService.addAuthority(newUser.getUsername(), "ROLE_USER");
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{username}")
-                .buildAndExpand(newUsername).toUri();
+                .buildAndExpand(newUser.getUsername()).toUri();
 
-        return ResponseEntity.created(location).body(dto);
+        newUser.setPassword(userService.maskPassword());
+
+        return ResponseEntity.created(location).body(newUser);
     }
 
     @PutMapping(value = "/{username}")

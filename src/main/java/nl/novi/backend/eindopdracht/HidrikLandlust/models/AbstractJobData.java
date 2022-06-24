@@ -1,5 +1,7 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.models;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.Max;
@@ -18,10 +20,14 @@ public abstract class AbstractJobData {
     private Byte progressPercentage;
 
     @Column(nullable = false)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate deadline;
 
     @Column()
     private Integer budget;
+
+    @Column()
+    private Integer costs;
 
     public String getDescription() {
         return description;
@@ -54,4 +60,12 @@ public abstract class AbstractJobData {
     public void setBudget(Integer budget) {
         this.budget = budget;
     }
+
+    public Integer getCosts() {
+        return costs;
+    } //TODO
+
+    public void setCosts(Integer costs) {
+        this.costs = costs;
+    } //TODO
 }

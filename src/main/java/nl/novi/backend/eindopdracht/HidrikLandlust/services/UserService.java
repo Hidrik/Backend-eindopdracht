@@ -20,7 +20,7 @@ public interface UserService {
 
     boolean emailExists(String email);
 
-    String createUser(UserDto userDto);
+    UserDto createUser(UserDto userDto);
 
     void deleteUser(String username);
 
@@ -34,30 +34,10 @@ public interface UserService {
 
     boolean authorityAlreadyExists(User user, Authority addedAuthority);
 
+    String maskPassword();
 
-    static UserDto fromUser(User user){
+    UserDto fromUser(User user);
 
-        var dto = new UserDto();
-
-        dto.setUsername(user.getUsername());
-        dto.setPassword(user.getPassword());
-        dto.setEnabled(user.isEnabled());
-        dto.setEmail(user.getEmail());
-        dto.setAuthorities(user.getAuthorities());
-
-        return dto;
-    }
-
-    static User toUser(UserDto userDto){
-
-        var user = new User();
-
-        user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
-        user.setEnabled(userDto.getEnabled());
-        user.setEmail(userDto.getEmail());
-
-        return user;
-    }
+    User toUser(UserDto userDto);
 
 }

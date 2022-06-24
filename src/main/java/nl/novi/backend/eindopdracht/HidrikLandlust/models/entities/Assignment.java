@@ -1,5 +1,6 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.AbstractJobData;
 
 import javax.persistence.*;
@@ -18,8 +19,17 @@ public class Assignment extends AbstractJobData {
     @Column(name = "description_finished_work")
     private String descriptionFinishedWork;
 
+    @Column(name = "assignment_code")
+    private String assignmentCode;
+
+    @JsonIgnore
     @ManyToMany(mappedBy = "assignments")
     Set<Component> components;
+
+    @JsonIgnore
+    @ManyToOne()
+    @JoinColumn(name="project_id", nullable=false)
+    Project project;
 
     public Long getId() {
         return id;
@@ -45,11 +55,31 @@ public class Assignment extends AbstractJobData {
         this.descriptionFinishedWork = descriptionFinishedWork;
     }
 
+    public Set<Component> getComponents() {
+        return components;
+    }
+
     public void addComponent(Component component) {
         components.add(component);
     }
 
     public void removeComponent(Component component) {
         components.remove(component);
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    public String getAssignmentCode() {
+        return assignmentCode;
+    }
+
+    public void setAssignmentCode(String assignmentCode) {
+        this.assignmentCode = assignmentCode;
     }
 }

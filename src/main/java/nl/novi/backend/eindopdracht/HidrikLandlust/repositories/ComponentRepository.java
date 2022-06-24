@@ -1,4 +1,8 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.repositories;
 
-public interface ComponentRepository {
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Component;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Project;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ComponentRepository extends JpaRepository<Component, Long> {
 }

@@ -1,52 +1,26 @@
-package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
+package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.web.multipart.MultipartFile;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
 
 import javax.persistence.*;
 import java.io.File;
 import java.util.Set;
 
-@Entity
-public class Component {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+
+public class ComponentDto {
+
     private Long id;
-
-    @Column(nullable = false)
     private String description;
-
-    @Column(nullable = false)
     private String manufacturer;
-
-    @Column(nullable = false)
     private Integer price;
-
-    @Column()
     private Integer stock;
-
-    @Column(name = "article_number", nullable = false)
     private String articleNumber;
-
-    @Column(name = "order_link", nullable = false)
     private String orderLink;
 
-    @Column(name = "file_name")
     private String fileName;
-
-    @Column(name = "file_type")
     private String fileUrl;
 
-    @JsonIgnore
-    @ManyToMany(targetEntity = Assignment.class)
-    @JoinTable(
-            name = "used_components",
-            joinColumns = @JoinColumn(name = "component_id"),
-            inverseJoinColumns = @JoinColumn(name = "assignment_id"))
     Set<Assignment> assignments;
-
-
 
     public Long getId() {
         return id;
@@ -124,11 +98,7 @@ public class Component {
         return assignments;
     }
 
-    public void addAssignment(Assignment ass) {
-        assignments.add(ass);
-    }
-
-    public void deleteAssignment(Assignment ass) {
-        assignments.remove(ass);
+    public void setAssignments(Set<Assignment> assignments) {
+        this.assignments = assignments;
     }
 }

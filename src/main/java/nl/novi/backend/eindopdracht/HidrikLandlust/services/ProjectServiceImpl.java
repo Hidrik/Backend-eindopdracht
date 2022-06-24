@@ -1,5 +1,6 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.AlreadyExistsException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.DateLiesInPastException;
@@ -23,6 +24,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Autowired
     ProjectRepository projectRepository;
 
+
     @Override
     public List<ProjectDto> getProjects() {
         List<Project> projects = projectRepository.findAll();
@@ -45,12 +47,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Long getIdFromProjectCode(String code) {
-        Optional<Project> optionalProject = projectRepository.findByProjectCode(code);
-        if (optionalProject.isPresent()){
-            return optionalProject.get().getId();
-        } else {
-            throw new RecordNotFoundException("Project not found.");
-        }
+        Project project = retreiveProject(code);
+
+        return project.getId();
     }
 
     @Override
@@ -68,6 +67,39 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public Long updateProject(String projectCode, ProjectDto dto) {
+
+        Project project = retreiveProject(projectCode);
+
+        if (!(dto.getDeadline() == null)) {project.setDeadline(dto.getDeadline());}
+        if (!(dto.getBudget() == null)) {project.setBudget(dto.getBudget());}
+        if (!(dto.getDescription() == null)) {project.setDescription(dto.getDescription());}
+        if (!(dto.getProjectCode() == null)) {project.setProjectCode(dto.getProjectCode());}
+        if (!(dto.getProgressPercentage() == null)) {project.setProgressPercentage(dto.getProgressPercentage());}
+        projectRepository.save(project);
+        return dto.getId();
+    }
+
+    @Override
+    public void deleteProject(String projectCode) {
+        projectRepository.delete(retreiveProject(projectCode));
+    }
+
+    @Override
+    public Project saveProject(Project project, Assignment ass) {
+        return projectRepository.save(project);
+    }
+
+    @Override
+    public Project retreiveProject(String projectCode){
+        Optional<Project> optionalProject = projectRepository.findByProjectCode(projectCode);
+        if (optionalProject.isPresent()) {
+            return optionalProject.get();
+        } else {
+            throw new RecordNotFoundException("Project " + projectCode + " does not exist.");
+        }
+    }
+
     public boolean projectCodeExists(ProjectDto dto) {
         return projectRepository.existsByProjectCode(dto.getProjectCode());
     }
@@ -106,15 +138,15 @@ public class ProjectServiceImpl implements ProjectService {
         proj.setProgressPercentage(dto.getProgressPercentage());
         proj.setId(dto.getId());
 
-        for (Account acc : dto.getAccounts()) {
-            if (!proj.getAccounts().contains(acc)) {
-                proj.addAccount(acc);
+        if (!(dto.getAccounts() == null)) {
+            for (Account acc : dto.getAccounts()) {
+                if (!proj.getAccounts().contains(acc)) proj.addAccount(acc);
             }
         }
 
-        for (Assignment ass : dto.getAssignments()) {
-            if (!proj.getAssignments().contains(ass)) {
-                proj.addAssignment(ass);
+        if (!(dto.getAssignments() == null)) {
+            for (Assignment ass : dto.getAssignments()) {
+                if (!proj.getAssignments().contains(ass)) proj.addAssignment(ass);
             }
         }
 

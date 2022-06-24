@@ -1,5 +1,6 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.AbstractJobData;
 
 import javax.persistence.*;
@@ -16,9 +17,10 @@ public class Project extends AbstractJobData {
     @Column(name = "project_code", nullable = false, unique = true)
     private String projectCode;
 
+
+    @JsonIgnore
     @OneToMany(
             targetEntity = Assignment.class,
-            mappedBy = "id",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER)

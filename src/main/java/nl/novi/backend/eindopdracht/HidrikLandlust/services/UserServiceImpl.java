@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
         List<UserDto> collection = new ArrayList<>();
         List<User> list = userRepository.findAll();
         for (User user : list) {
-            collection.add(UserService.fromUser(user));
+            collection.add(fromUser(user));
         }
         return collection;
     }
@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
         UserDto dto;
         Optional<User> user = userRepository.findById(username);
         if (user.isPresent()){
-            dto = UserService.fromUser(user.get());
+            dto = fromUser(user.get());
         }else {
             throw new RecordNotFoundException("User " + username + "does not exists.");
         }
@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsByEmail(email);
     }
 
-    public String createUser(UserDto userDto) {
+    public UserDto createUser(UserDto userDto) {
 
         String username = userDto.getUsername();
         String email = userDto.getEmail();
@@ -57,8 +57,8 @@ public class UserServiceImpl implements UserService {
         if (emailExists(email)) throw new EmailAlreadyInUseException(email);
 
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        User newUser = userRepository.save(UserService.toUser(userDto));
-        return newUser.getUsername();
+        User newUser = userRepository.save(toUser(userDto));
+        return fromUser(newUser);
     }
 
     public void deleteUser(String username) {
@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
     public Set<Authority> getAuthorities(String username) {
         if (!userExists(username)) throw new RecordNotFoundException("User " + username + "does not exists.");
         User user = userRepository.findById(username).get();
-        UserDto userDto = UserService.fromUser(user);
+        UserDto userDto = fromUser(user);
         return userDto.getAuthorities();
     }
 
@@ -107,6 +107,37 @@ public class UserServiceImpl implements UserService {
             }
         }
         return returnValue;
+    }
+
+    public String maskPassword() {
+        return "**********";
+    }
+
+    public UserDto fromUser(User user){
+
+        var dto = new UserDto();
+
+        dto.setUsername(user.getUsername());
+        dto.setPassword(user.getPassword());
+        dto.setEnabled(user.isEnabled());
+        dto.setEmail(user.getEmail());
+        dto.setAuthorities(user.getAuthorities());
+        dto.setAccount(user.getAccount());
+
+        return dto;
+    }
+
+    public User toUser(UserDto userDto){
+
+        var user = new User();
+
+        user.setUsername(userDto.getUsername());
+        user.setPassword(userDto.getPassword());
+        user.setEnabled(userDto.getEnabled());
+        user.setEmail(userDto.getEmail());
+        user.setAccount(userDto.getAccount());
+
+        return user;
     }
 
 }

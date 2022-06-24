@@ -110,7 +110,7 @@ public class UserControllerTest {
     @WithMockUser(roles = "ADMIN")
     void makeNewUserAsAdminSucceed() throws Exception {
 
-        when(userService.createUser(Mockito.any(UserDto.class))).thenReturn(generateUserDto().getUsername());
+        when(userService.createUser(Mockito.any(UserDto.class))).thenReturn(generateUserDto());
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -127,7 +127,7 @@ public class UserControllerTest {
     @WithMockUser(roles = "USER")
     void makeNewUserAsUserFailedUnauthorized() throws Exception {
 
-        when(userService.createUser(Mockito.any(UserDto.class))).thenReturn(generateUserDto().getUsername());
+        when(userService.createUser(Mockito.any(UserDto.class))).thenReturn(generateUserDto());
 
         mockMvc
                 .perform(MockMvcRequestBuilders

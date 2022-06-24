@@ -49,7 +49,7 @@ public class UserServiceImplTest {
         user.setEmail(testDto.getEmail());
         user.addAuthority(testDto.getAuthorities().iterator().next());
 
-        UserDto generatedDto = UserService.fromUser(user);
+        UserDto generatedDto = userService.fromUser(user);
 
         assertThat(generatedDto).isEqualToComparingFieldByField(testDto);
     }
@@ -65,7 +65,7 @@ public class UserServiceImplTest {
         testUser.setEmail(dto.getEmail());
         //Authorities aren't passed through the function so isn't used in the test
 
-        User generatedUser = UserService.toUser(dto);
+        User generatedUser = userService.toUser(dto);
 
         assertThat(generatedUser).isEqualToComparingFieldByField(testUser);
     }
@@ -76,7 +76,7 @@ public class UserServiceImplTest {
         List<User> users = new ArrayList<>();
 
         UserDto userDto = generateUserDto();
-        User user = UserService.toUser(userDto);
+        User user = userService.toUser(userDto);
 
         userDto.setAuthorities(user.getAuthorities());
 
@@ -100,7 +100,7 @@ public class UserServiceImplTest {
     @Test
     void getOneUserSucceeds() {
         UserDto userDto = generateUserDto();
-        User user = UserService.toUser(userDto);
+        User user = userService.toUser(userDto);
         userDto.setAuthorities(user.getAuthorities());
 
         when(userRepository.findById(userDto.getUsername())).thenReturn(Optional.of(user));
@@ -144,13 +144,13 @@ public class UserServiceImplTest {
     @Test
     void creationOfUserSucceeds() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+        User user = userService.toUser(dto);
 
         when(userRepository.existsById(dto.getUsername())).thenReturn(false);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        String generatedUsername = userService.createUser(dto);
+        String generatedUsername = userService.createUser(dto).getUsername();
 
         assertEquals(dto.getUsername(), generatedUsername);
     }
@@ -158,7 +158,7 @@ public class UserServiceImplTest {
     @Test
     void creationOfUserFailesUsernameAlreadyExists() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+        User user = userService.toUser(dto);
 
         when(userRepository.existsById(dto.getUsername())).thenReturn(true);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(false);
@@ -171,7 +171,7 @@ public class UserServiceImplTest {
     @Test
     void creationOfUserFailesEmailAlreadyInUse() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+        User user = userService.toUser(dto);
 
         when(userRepository.existsById(dto.getUsername())).thenReturn(false);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(true);
@@ -202,7 +202,7 @@ public class UserServiceImplTest {
     @Test
     void getUserAuthoritiesSucceeds() {
         UserDto userDto = generateUserDto();
-        User user = UserService.toUser(userDto);
+        User user = userService.toUser(userDto);
         userDto.setAuthorities(user.getAuthorities());
 
         when(userRepository.existsById(any(String.class))).thenReturn(true);
@@ -225,7 +225,7 @@ public class UserServiceImplTest {
     @Test
     void addAuthoritySucceeds() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+        User user = userService.toUser(dto);
         Authority auth = dto.getAuthorities().iterator().next();
         user.addAuthority(auth);
 
@@ -252,7 +252,7 @@ public class UserServiceImplTest {
     @Test
     void addAuthorityToUserFailsUserAlreadyHasAuthority() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+        User user = userService.toUser(dto);
         Authority auth = dto.getAuthorities().iterator().next();
         user.addAuthority(auth);
 
@@ -267,7 +267,7 @@ public class UserServiceImplTest {
     @Test
     void removeAuthoritySucceeds() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+        User user = userService.toUser(dto);
         Authority auth = dto.getAuthorities().iterator().next();
         user.addAuthority(auth);
 
