@@ -1,11 +1,10 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.models;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.time.LocalDate;
@@ -32,8 +31,9 @@ public abstract class AbstractJobData {
     @Column()
     private Integer costs;
 
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_on")
+    @Column(name = "created_on", insertable = false, updatable = false)
     private Date createdOn;
 
     public String getDescription() {

@@ -2,6 +2,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,15 +39,14 @@ public class ProjectController {
     }
 
     @PostMapping(value = "", consumes = {"multipart/form-data"})
-    public ResponseEntity<ProjectDto> createNewProject(ProjectDto dto) {
+    public ResponseEntity<ProjectSummaryDto> createNewProject(ProjectDto dto) {
 
-        Long id = projectService.createProject(dto);
-        dto.setId(id);
+        ProjectSummaryDto createdDto = projectService.createProject(dto);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{username}")
-                .buildAndExpand(id).toUri();
+                .buildAndExpand(createdDto.getId()).toUri();
 
-        return ResponseEntity.created(location).body(dto);
+        return ResponseEntity.created(location).body(createdDto);
     }
 
     @PutMapping(value = "/{projectCode}")

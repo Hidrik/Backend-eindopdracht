@@ -19,7 +19,7 @@ public interface ProjectService {
 
     Long getIdFromProjectCode(String code);
 
-    Long createProject(ProjectDto dto);
+    ProjectSummaryDto createProject(ProjectDto dto);
 
     Long updateProject(String projectCode, ProjectDto dto);
 

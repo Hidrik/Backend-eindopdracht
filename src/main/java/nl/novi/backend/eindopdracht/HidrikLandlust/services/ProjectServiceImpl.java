@@ -13,6 +13,7 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.repositories.ProjectRepositor
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -61,7 +62,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Long createProject(ProjectDto dto) {
+    public ProjectSummaryDto createProject(ProjectDto dto) {
         if (projectCodeExists(dto)) {
             throw new AlreadyExistsException("Project with " + dto.getProjectCode() + " already exists.");
         }
@@ -69,9 +70,16 @@ public class ProjectServiceImpl implements ProjectService {
             throw new DateLiesInPastException("Deadline " + dto.getDeadline() + " can not lie in the past.");
         }
         Project project = toProject(dto);
+
+        //Initialize data
         project.setProgressPercentage((byte) 0);
+        project.setCosts(0);
+
+        Date now = new Date();
+        project.setCreatedOn(new Timestamp(now.getTime()));
+
         project = projectRepository.save(project);
-            return (project.getId());
+            return (fromProjectToSummary(project));
     }
 
     @Override
