@@ -4,9 +4,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.time.LocalDate;
+import java.util.Date;
 
 @MappedSuperclass
 public abstract class AbstractJobData {
@@ -19,7 +22,7 @@ public abstract class AbstractJobData {
     @Max(value = 100, message = "Progress can't be higher than 100%")
     private Byte progressPercentage;
 
-    @Column(nullable = false)
+    @Column()
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate deadline;
 
@@ -28,6 +31,10 @@ public abstract class AbstractJobData {
 
     @Column()
     private Integer costs;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_on")
+    private Date createdOn;
 
     public String getDescription() {
         return description;
@@ -61,11 +68,17 @@ public abstract class AbstractJobData {
         this.budget = budget;
     }
 
-    public Integer getCosts() {
-        return costs;
-    } //TODO
+    public abstract Integer getCosts();
 
     public void setCosts(Integer costs) {
         this.costs = costs;
-    } //TODO
+    }
+
+    public Date getCreatedOn() {
+        return createdOn;
+    }
+
+    public void setCreatedOn(Date createdOn) {
+        this.createdOn = createdOn;
+    }
 }

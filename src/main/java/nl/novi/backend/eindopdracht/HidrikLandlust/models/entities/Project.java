@@ -26,6 +26,7 @@ public class Project extends AbstractJobData {
             fetch = FetchType.EAGER)
     private Set<Assignment> assignments = new HashSet<>();
 
+    @JsonIgnore
     @ManyToMany(targetEntity = Account.class)
     @JoinTable(
             name = "project_members",
@@ -64,5 +65,15 @@ public class Project extends AbstractJobData {
     }
     public void removeAccount(Account account) {
         this.accounts.remove(account);
+    }
+
+    @Override
+    public Integer getCosts() {
+        Integer cost = 0;
+        for (Assignment ass : assignments) {
+            cost += ass.getCosts();
+        }
+        this.setCosts(cost);
+        return cost;
     }
 }

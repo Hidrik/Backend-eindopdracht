@@ -5,6 +5,7 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.EmailAlreadyInUseE
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.UserAlreadyExistsException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.CustomUserDetailsService;
+import nl.novi.backend.eindopdracht.HidrikLandlust.services.FileStorageService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.UserService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.utils.JwtUtil;
 
@@ -47,6 +48,9 @@ public class UserControllerTest {
 
     @MockBean
     JwtUtil jwtUtil;
+
+    @MockBean
+    FileStorageService fileStorageService;
 
     @Test
     @WithMockUser(roles="ADMIN") //For authorisation

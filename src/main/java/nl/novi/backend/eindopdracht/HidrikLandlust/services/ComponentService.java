@@ -1,7 +1,11 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentSummaryDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Component;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,15 +21,29 @@ public interface ComponentService {
 
     ComponentDto updateComponent(Long id, ComponentDto dto);
 
-    Component retreiveComponent(Long id);
+    Component getComponent(Long id);
 
     void deleteComponent(Long id);
 
-    String getSavedFileName(Long id);
+    Component addComponentToAssignment(Assignment assignment, Long componentId);
 
-    ComponentDto saveFile(Long id, String fileName, String url);
+    Component removeComponentFromAssignment(Assignment assignment, Long componentId);
+
+    Boolean hasFile(Long id);
+
+    void saveFile(Long id, MultipartFile file);
+
+    Resource loadFile(Long id);
+
+    void deleteFile(Long id);
+
+    void saveFileInfo(Long id, String fileName, String url);
+
+    String deleteFileInfo(Long id);
 
     Component toComponent(ComponentDto dto);
+
+    ComponentSummaryDto fromComponentSummary(Component component);
 
     ComponentDto fromComponent(Component comp);
 

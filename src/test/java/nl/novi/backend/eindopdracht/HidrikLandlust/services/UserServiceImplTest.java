@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 public class UserServiceImplTest {
     @Autowired
-    UserService userService = new UserServiceImpl();
+    UserService userService;
 
     @MockBean
     UserRepository userRepository;
@@ -103,9 +103,17 @@ public class UserServiceImplTest {
         User user = userService.toUser(userDto);
         userDto.setAuthorities(user.getAuthorities());
 
-        when(userRepository.findById(userDto.getUsername())).thenReturn(Optional.of(user));
+        when(userRepository.findById(any(String.class))).thenReturn(Optional.of(user));
+        when(userRepository.existsById(any(String.class))).thenReturn(true);
 
-        assertThat(userService.getUser(userDto.getUsername())).isEqualToComparingFieldByField(userDto);
+        UserDto recievedDto = userService.getUser(userDto.getUsername());
+
+        assertEquals(recievedDto.getAuthorities(), userDto.getAuthorities());
+        assertEquals(recievedDto.getEmail(), userDto.getEmail());
+        assertEquals(recievedDto.getUsername(), userDto.getUsername());
+        assertEquals(recievedDto.getAccount(), userDto.getAccount());
+        assertEquals(recievedDto.getEnabled(), userDto.getEnabled());
+        assertEquals(recievedDto.getPassword(), userDto.getPassword());
     }
 
     @Test
@@ -114,9 +122,7 @@ public class UserServiceImplTest {
 
         when(userRepository.findById(userDto.getUsername())).thenReturn(Optional.empty());
 
-        RecordNotFoundException exception = assertThrows(RecordNotFoundException.class, () -> {
-            userService.getUser(userDto.getUsername());
-        });
+        RecordNotFoundException exception = assertThrows(RecordNotFoundException.class, () -> userService.getUser(userDto.getUsername()));
 
         assertEquals(exception.getMessage(), "User " + userDto.getUsername() + "does not exists.");
     }
@@ -163,9 +169,7 @@ public class UserServiceImplTest {
         when(userRepository.existsById(dto.getUsername())).thenReturn(true);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(false);
 
-        assertThrows(UserAlreadyExistsException.class, () -> {
-            userService.createUser(dto);
-        });
+        assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(dto));
     }
 
     @Test
@@ -176,27 +180,21 @@ public class UserServiceImplTest {
         when(userRepository.existsById(dto.getUsername())).thenReturn(false);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(true);
 
-        assertThrows(EmailAlreadyInUseException.class, () -> {
-            userService.createUser(dto);
-        });
+        assertThrows(EmailAlreadyInUseException.class, () -> userService.createUser(dto));
     }
 
     @Test
     void deleteUserFailsBecauseUserDoesNotExists() {
         UserDto dto = generateUserDto();
 
-        assertThrows(RecordNotFoundException.class, () -> {
-            userService.deleteUser(dto.getUsername());
-        });
+        assertThrows(RecordNotFoundException.class, () -> userService.deleteUser(dto.getUsername()));
     }
 
     @Test
     void updateUserFailsBecauseUserDoesNotExists() {
         UserDto dto = generateUserDto();
 
-        assertThrows(RecordNotFoundException.class, () -> {
-            userService.updateUser(dto.getUsername(), dto);
-        });
+        assertThrows(RecordNotFoundException.class, () -> userService.updateUser(dto.getUsername(), dto));
     }
 
     @Test
@@ -217,9 +215,7 @@ public class UserServiceImplTest {
 
         when(userRepository.existsById(any(String.class))).thenReturn(false);
 
-        assertThrows(RecordNotFoundException.class, () -> {
-            userService.getAuthorities(dto.getUsername());
-        });
+        assertThrows(RecordNotFoundException.class, () -> userService.getAuthorities(dto.getUsername()));
     }
 
     @Test
@@ -232,9 +228,7 @@ public class UserServiceImplTest {
         when(userRepository.findById(dto.getUsername())).thenReturn(Optional.of(user));
         when(userRepository.existsById(any(String.class))).thenReturn(true);
 
-        assertDoesNotThrow(() -> {
-            userService.addAuthority(dto.getUsername(), "ROLE_ADMIN");
-        });
+        assertDoesNotThrow(() -> userService.addAuthority(dto.getUsername(), "ROLE_ADMIN"));
     }
 
     @Test
@@ -244,9 +238,7 @@ public class UserServiceImplTest {
 
         when(userRepository.existsById(any(String.class))).thenReturn(false);
 
-        assertThrows(RecordNotFoundException.class, () -> {
-            userService.addAuthority(dto.getUsername(), auth.getAuthority());
-        });
+        assertThrows(RecordNotFoundException.class, () -> userService.addAuthority(dto.getUsername(), auth.getAuthority()));
     }
 
     @Test

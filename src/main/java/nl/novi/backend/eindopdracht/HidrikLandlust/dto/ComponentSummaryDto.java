@@ -2,12 +2,9 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
 
-import javax.persistence.*;
-import java.io.File;
 import java.util.Set;
 
-
-public class ComponentDto {
+public class ComponentSummaryDto {
 
     private Long id;
     private String description;
@@ -17,10 +14,6 @@ public class ComponentDto {
     private String articleNumber;
     private String orderLink;
 
-    private String fileName;
-    private String fileUrl;
-
-    Set<AssignmentSummaryDto> assignments;
 
     public Long getId() {
         return id;
@@ -78,27 +71,4 @@ public class ComponentDto {
         this.orderLink = orderLink;
     }
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public String getFileUrl() {
-        return fileUrl;
-    }
-
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
-    }
-
-    public Set<AssignmentSummaryDto> getAssignments() {
-        return assignments;
-    }
-
-    public void setAssignments(Set<AssignmentSummaryDto> assignments) {
-        this.assignments = assignments;
-    }
 }

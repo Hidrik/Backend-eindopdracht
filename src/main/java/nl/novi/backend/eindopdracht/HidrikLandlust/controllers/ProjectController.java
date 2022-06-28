@@ -2,8 +2,8 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.services.AssignmentService;
-import nl.novi.backend.eindopdracht.HidrikLandlust.services.ProjectService;
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +21,9 @@ public class ProjectController {
 
     @Autowired
     AssignmentService assignmentService;
+
+    @Autowired
+    UserService userService;
 
     @GetMapping(value = "")
     public ResponseEntity<List<ProjectDto>> getAllProjects() {
@@ -65,6 +68,16 @@ public class ProjectController {
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/assignments/{projectCode}")
                 .buildAndExpand(receivedDto.getId()).toUri();
+
+        return ResponseEntity.created(location).body(receivedDto);
+    }
+
+    @PostMapping(value = "/users/{projectCode}")
+    public ResponseEntity<ProjectDto> addAccountToProject(@PathVariable("projectCode") String projectCode, @RequestBody Long accountId) {
+        ProjectDto dto = projectService.addAccountToProject(projectCode, accountId);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/users/{projectCode}")
+                .buildAndExpand(dto.getId()).toUri();
 
         return ResponseEntity.created(location).body(dto);
     }

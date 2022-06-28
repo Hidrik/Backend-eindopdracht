@@ -1,7 +1,9 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
 
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.User;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,10 @@ public interface UserService {
     void deleteUser(String username);
 
     void updateUser(String username, UserDto newUser);
+
+    UserDto addAccountToProject(String projectCode, String username);
+
+    User retreiveAccount(String username);
 
     Set<Authority> getAuthorities(String username);
 

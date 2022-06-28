@@ -1,6 +1,7 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Component;
@@ -17,15 +18,15 @@ public interface AssignmentService {
 
     Assignment getAssignment(Long id);
 
-    AssignmentDto getAssignmentDtoFromId(Long id);
+    AssignmentDto getAssignmentDto(Long id);
 
     AssignmentDto addAssignmentToProject(String projectCode, AssignmentDto dto);
 
+    AssignmentDto addComponentToAssignment(Integer amount, Long assignmentId, Long componentId);
+
+    void removeComponentFromAssignment(Integer amount, Long assignmentId, Long componentId);
+
     void removeAssignmentFromProject(Long id);
-
-    Boolean componentAlreadyExists(Component comp, Assignment ass);
-
-    void saveAssignment(Assignment ass);
 
     boolean assignmentCodeExists(String assignmentCode);
 
@@ -33,5 +34,9 @@ public interface AssignmentService {
 
     AssignmentDto fromAssignment(Assignment ass);
 
+    AssignmentSummaryDto fromAssignmentToSummary(Assignment ass);
+
     Assignment toAssignment(AssignmentDto dto);
+
+    Assignment toAssignment(AssignmentSummaryDto dto);
 }

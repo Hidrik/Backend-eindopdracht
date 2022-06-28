@@ -1,7 +1,10 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.AlreadyExistsException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.InternalFailureException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.ComponentService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,38 +60,38 @@ public class ComponentController {
         return ResponseEntity.accepted().build();
     }
 
-    @PostMapping(value = "/file/{id}")
-    public ResponseEntity<String> saveComponentFile(@PathVariable(value = "id") Long id, @RequestParam("file") MultipartFile file){
-
-        try {
-            String url = storageService.save(file);
-            componentService.saveFile(id, file.getOriginalFilename(), url);
-            return ResponseEntity.ok().body("Uploaded the file successfully: " + file.getOriginalFilename());
-        } catch (Exception e) {
-            throw new BadRequestException("Could not upload the file: " + file.getOriginalFilename() + "!");
-
-        }
-    }
-
-    @DeleteMapping(value = "/file/{id}")
-    public ResponseEntity<ComponentDto> deleteFile(@PathVariable("id") Long id) {
-        String filename = componentService.getSavedFileName(id);
-
-        try {
-            storageService.delete(filename);
-            return ResponseEntity.accepted().build();
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
     @GetMapping("/file/{id}")
     @ResponseBody
-    public ResponseEntity<Resource> getFile(@PathVariable Long id) {
-        String filename = componentService.getSavedFileName(id);
-        Resource file = storageService.load(filename);
+    public ResponseEntity<Resource> getComponentFile(@PathVariable Long id) {
+        Resource file = componentService.loadFile(id);
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
+
+
+    @PostMapping(value = "/file/{id}")
+    public ResponseEntity<String> saveComponentFile(@PathVariable(value = "id") Long id, @RequestParam("file") MultipartFile file){
+        if (componentService.hasFile(id)) throw new AlreadyExistsException("Component with id " + id + " already has a file.");
+        componentService.saveFile(id, file);
+
+        return ResponseEntity.ok().body("Uploaded file successfully: " + file.getOriginalFilename());
+    }
+
+    @PutMapping(value = "/file/{id}")
+    public ResponseEntity<String> updateComponentFile(@PathVariable(value = "id") Long id, @RequestParam("file") MultipartFile file){
+        if (!componentService.hasFile(id)) throw new RecordNotFoundException("Component with id " + id + " has no file.");
+        componentService.saveFile(id, file);
+
+        return ResponseEntity.ok().body("Uploaded and updated file successfully: " + file.getOriginalFilename());
+    }
+
+    @DeleteMapping(value = "/file/{id}")
+    public ResponseEntity<String> deleteComponentFile(@PathVariable("id") Long id) {
+        componentService.deleteFile(id);
+
+        return ResponseEntity.accepted().body("Removed file from component with id " + id);
+    }
+
 
 }

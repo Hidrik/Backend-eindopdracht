@@ -7,9 +7,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface FileStorageService {
     void init();
-    String save(MultipartFile file);
-    Resource load(String filename);
-    void delete(String filename);
+    Path createDirectory(Long componentId);
+    String save(MultipartFile file, Long componentId);
+    Resource load(String fileName, Long componentId);
+    void delete(String fileName, Long componentId);
     void deleteAll();
-    Stream<Path> loadAll();
+    Boolean fileExists(String fileName, Long componentId);
+    /*  Stream<Path> loadAll();*/
 }

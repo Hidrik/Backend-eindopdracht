@@ -47,7 +47,6 @@ public class Component {
     Set<Assignment> assignments;
 
 
-
     public Long getId() {
         return id;
     }
@@ -122,6 +121,10 @@ public class Component {
 
     public Set<Assignment> getAssignments() {
         return assignments;
+    }
+
+    public void setAssignments(Set<Assignment> assignments) {
+        this.assignments = assignments;
     }
 
     public void addAssignment(Assignment ass) {

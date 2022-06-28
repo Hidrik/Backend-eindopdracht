@@ -1,22 +1,30 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentSummaryDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.InternalFailureException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Component;
 import nl.novi.backend.eindopdracht.HidrikLandlust.repositories.ComponentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ComponentServiceImpl implements ComponentService {
     @Autowired
     ComponentRepository componentRepository;
+
+    @Autowired
+    FileStorageService storageService;
+
+    AssignmentService assignmentService = new AssignmentServiceImpl();
 
     @Override
     public List<ComponentDto> getComponentsDto() {
@@ -26,12 +34,16 @@ public class ComponentServiceImpl implements ComponentService {
 
     @Override
     public ComponentDto getComponentDto(Long id) {
-        Component component = retreiveComponent(id);
+        Component component = getComponent(id);
         return fromComponent(component);
     }
 
     @Override
     public ComponentDto createComponent(ComponentDto dto) {
+        //Initialize variables when not specifiek when created
+        if (dto.getStock() == null) dto.setStock(0);
+        if (dto.getPrice() == null) dto.setPrice(0);
+
         Component component = toComponent(dto);
         Component savedComponent = componentRepository.save(component);
         return fromComponent(savedComponent);
@@ -39,19 +51,18 @@ public class ComponentServiceImpl implements ComponentService {
 
     @Override
     public ComponentDto updateComponent(Long id, ComponentDto dto) {
-        Component comp = retreiveComponent(id);
+        Component comp = getComponent(id);
 
- /*       if (!(dto.getFileType() == null))       comp.setFileType(dto.getFileType());
-        if (!(dto.getFileName() == null))       comp.setFileName(dto.getFileName());
-        if (!(dto.getFileData() == null))       comp.setFileData(dto.getFileData());*/
+        if (dto.getFileUrl() != null)        comp.setFileUrl(dto.getFileUrl());
+        if (dto.getFileName() != null)       comp.setFileName(dto.getFileName());
 
-        if (!(dto.getOrderLink() == null))      comp.setOrderLink(dto.getOrderLink());
-        if (!(dto.getArticleNumber() == null))  comp.setArticleNumber(dto.getArticleNumber());
-        if (!(dto.getPrice() == null))          comp.setPrice(dto.getPrice());
-        if (!(dto.getId() == null))             comp.setId(dto.getId());
-        if (!(dto.getStock() == null))          comp.setStock(dto.getStock());
-        if (!(dto.getManufacturer() == null))   comp.setManufacturer(dto.getManufacturer());
-        if (!(dto.getDescription() == null))    comp.setDescription(dto.getDescription());
+        if (dto.getOrderLink() != null)      comp.setOrderLink(dto.getOrderLink());
+        if (dto.getArticleNumber() != null)  comp.setArticleNumber(dto.getArticleNumber());
+        if (dto.getPrice() != null)          comp.setPrice(dto.getPrice());
+        if (dto.getId() != null)             comp.setId(dto.getId());
+        if (dto.getStock() != null)          comp.setStock(dto.getStock());
+        if (dto.getManufacturer() != null)   comp.setManufacturer(dto.getManufacturer());
+        if (dto.getDescription() != null)    comp.setDescription(dto.getDescription());
 
         Component savedComponent = componentRepository.save(comp);
 
@@ -59,7 +70,7 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public Component retreiveComponent(Long id) {
+    public Component getComponent(Long id) {
         Optional<Component> optionalComponent = componentRepository.findById(id);
 
         if (optionalComponent.isPresent()) {
@@ -71,26 +82,103 @@ public class ComponentServiceImpl implements ComponentService {
 
     @Override
     public void deleteComponent(Long id) {
-        componentRepository.delete(retreiveComponent(id));
+        componentRepository.delete(getComponent(id));
     }
 
     @Override
-    public String getSavedFileName(Long id) {
-        Component component = retreiveComponent(id);
-        //MultipartFile file = component.getFileData();
-
-        return component.getFileName();
+    public Component addComponentToAssignment(Assignment assignment, Long componentId) {
+        Component component = getComponent(componentId);
+        component.addAssignment(assignment);
+        return componentRepository.save(component);
     }
 
     @Override
-    public ComponentDto saveFile(Long id, String fileName, String url) {
-        Component component = retreiveComponent(id);
+    public Component removeComponentFromAssignment(Assignment assignment, Long componentId) {
+        Component component = getComponent(componentId);
+
+        component.deleteAssignment(assignment);
+
+        return componentRepository.save(component);
+    }
+
+    @Override
+    public void saveFile(Long id, MultipartFile file) {
+        String fileName = file.getOriginalFilename();
+        String url;
+        String oldFileName = getComponent(id).getFileName();
+        Boolean oldFileExists = false;
+        if (oldFileName != null){
+            oldFileExists = storageService.fileExists(oldFileName, id);
+        }
+
+        //First delete old- and save new file.
+        try {
+            if (oldFileName != null & oldFileExists) storageService.delete(oldFileName, id);
+            url = storageService.save(file, id);
+        } catch (Exception e) {
+            throw new InternalError("Uploading file failed, cant save file: " + fileName);
+        }
+
+        //After succession -> try to save to DB.
+        try {
+            if (oldFileName != null) deleteFileInfo(id);
+            saveFileInfo(id, fileName, url);
+        } catch (Exception ex) {
+            //If writing to DB fails -> the component must be deleted.
+            storageService.delete(fileName, id);
+            throw new InternalError("Uploading file failed");
+        }
+    }
+
+    @Override
+    public Resource loadFile(Long id) {
+        String fileName = getComponent(id).getFileName();
+        try {
+            return storageService.load(fileName, id);
+        } catch (Exception e) {
+            if (fileName == null) {
+                throw new RecordNotFoundException("Component with id " + id + " has no file attached.");
+            } else {
+                throw new InternalFailureException("Cant load file " + fileName);
+            }
+
+        }
+    }
+
+    @Override
+    public void deleteFile(Long id) {
+        String fileName = deleteFileInfo(id);
+        try {
+            storageService.delete(fileName, id);
+        } catch (Exception e) {
+            throw new InternalFailureException("File from component with id " + id + " can not be removed or is already removed.");
+        }
+    }
+
+    @Override
+    public void saveFileInfo(Long id, String fileName, String url) {
+        Component component = getComponent(id);
         component.setFileName(fileName);
         component.setFileUrl(url);
 
         Component savedComponent = componentRepository.save(component);
+    }
 
-        return fromComponent(savedComponent);
+    @Override
+    public String deleteFileInfo(Long id) {
+        Component component = getComponent(id);
+        String fileName = component.getFileName();
+        component.setFileName(null);
+        component.setFileUrl(null);
+        componentRepository.save(component);
+
+        return fileName;
+    }
+
+    @Override
+    public Boolean hasFile(Long id) {
+        Component component = getComponent(id);
+        return component.getFileName() != null;
     }
 
     @Override
@@ -111,10 +199,24 @@ public class ComponentServiceImpl implements ComponentService {
         if (dto.getAssignments() == null) return comp;
 
 
-        for (Assignment ass : dto.getAssignments()) {
-            comp.addAssignment(ass);
+        for (AssignmentSummaryDto ass : dto.getAssignments()) {
+
+            comp.addAssignment(assignmentService.toAssignment(ass));
         }
         return comp;
+    }
+
+    @Override
+    public ComponentSummaryDto fromComponentSummary(Component component) {
+        ComponentSummaryDto dto = new ComponentSummaryDto();
+        dto.setArticleNumber(component.getArticleNumber());
+        dto.setDescription(component.getDescription());
+        dto.setId(component.getId());
+        dto.setPrice(component.getPrice());
+        dto.setStock(component.getStock());
+        dto.setManufacturer(component.getManufacturer());
+        dto.setOrderLink(component.getOrderLink());
+        return dto;
     }
 
     @Override
@@ -132,7 +234,13 @@ public class ComponentServiceImpl implements ComponentService {
         dto.setStock(comp.getStock());
         dto.setManufacturer(comp.getManufacturer());
         dto.setDescription(comp.getDescription());
-        dto.setAssignments(comp.getAssignments());
+
+
+        Set<AssignmentSummaryDto> assignmentSummaryDtos = new HashSet<>();
+        for (Assignment ass : comp.getAssignments()) {
+            assignmentSummaryDtos.add(assignmentService.fromAssignmentToSummary(ass));
+        }
+        dto.setAssignments(assignmentSummaryDtos);
 
         return dto;
     }

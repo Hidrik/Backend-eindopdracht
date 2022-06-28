@@ -1,5 +1,7 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,8 +22,10 @@ public class Account {
     @Column(name = "employee_function")
     private String employeeFunction;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "accounts")
     Set<Project> projects = new HashSet<>();
+
 
     @OneToMany(
             targetEntity = Assignment.class,

@@ -52,4 +52,11 @@ public class ExceptionController {
 
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(value = InternalFailureException.class)
+    public ResponseEntity<Object> exception(InternalFailureException exception) {
+
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 }

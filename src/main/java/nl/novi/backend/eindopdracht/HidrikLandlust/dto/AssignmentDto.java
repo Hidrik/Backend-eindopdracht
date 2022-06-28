@@ -3,15 +3,17 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Component;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Project;
 
-import java.util.Set;
+import java.util.*;
 
 public class AssignmentDto extends AbstractJobDataDto {
     private Long id;
     private Short hoursWorked;
     private String descriptionFinishedWork;
     private String assignmentCode;
-    Set<Component> components;
-    private Project project;
+    Set<ComponentSummaryDto> components = new HashSet<>();
+    private Map<Long, Integer> amountOfComponentById = new HashMap<>();
+
+    private ProjectSummaryDto project;
 
     public Long getId() {
         return id;
@@ -37,12 +39,16 @@ public class AssignmentDto extends AbstractJobDataDto {
         this.descriptionFinishedWork = descriptionFinishedWork;
     }
 
-    public Set<Component> getComponents() {
+    public Set<ComponentSummaryDto> getComponents() {
         return components;
     }
 
-    public void setComponents(Set<Component> components) {
-        this.components = components;
+    public void addComponent(ComponentSummaryDto component) {
+        this.components.add(component);
+    }
+
+    public void removeComponent(ComponentSummaryDto component) {
+        this.components.remove(component);
     }
 
     public String getAssignmentCode() {
@@ -53,12 +59,20 @@ public class AssignmentDto extends AbstractJobDataDto {
         this.assignmentCode = assignmentCode;
     }
 
-    public Project getProject() {
+    public ProjectSummaryDto getProject() {
         return project;
     }
 
-    public void setProject(Project project) {
+    public void setProject(ProjectSummaryDto project) {
         this.project = project;
+    }
+
+    public Map<Long, Integer> getAmountOfComponentById() {
+        return amountOfComponentById;
+    }
+
+    public void setAmountOfComponentById(Map<Long, Integer> amountOfComponentById) {
+        this.amountOfComponentById = amountOfComponentById;
     }
 }
 

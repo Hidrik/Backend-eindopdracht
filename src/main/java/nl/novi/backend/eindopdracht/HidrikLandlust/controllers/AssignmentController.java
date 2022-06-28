@@ -5,9 +5,7 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.services.AssignmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -25,9 +23,9 @@ public class AssignmentController {
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<AssignmentDto> getAssignment(@PathVariable("id") Long id) {
-        AssignmentDto assignment = assignmentService.getAssignmentDtoFromId(id);
+        AssignmentDto dto = assignmentService.getAssignmentDto(id);
 
-        return ResponseEntity.accepted().body(assignment);
+        return ResponseEntity.accepted().body(dto);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -37,9 +35,15 @@ public class AssignmentController {
         return ResponseEntity.accepted().build();
     }
 
-    @PutMapping(value = "/{id}/{componentId}")
-    public ResponseEntity<Object> addComponent(@PathVariable("id") Long id, @PathVariable("componentId") Long componentId) {
+    @PutMapping(value = "/{id}/{componentId}") //TODO
+    public ResponseEntity<Object> addComponent(@PathVariable("id") Long assignmentId, @PathVariable("componentId") Long componentId, @RequestBody Integer amount) {
+        assignmentService.addComponentToAssignment(amount, assignmentId, componentId);
+        return ResponseEntity.accepted().build();
+    }
 
+    @DeleteMapping(value = "/{id}/{componentId}") //TODO
+    public ResponseEntity<Object> removeComponent(@PathVariable("id") Long assignmentId, @PathVariable("componentId") Long componentId, @RequestBody Integer amount) {
+        assignmentService.removeComponentFromAssignment(amount, assignmentId, componentId);
         return ResponseEntity.accepted().build();
     }
 }

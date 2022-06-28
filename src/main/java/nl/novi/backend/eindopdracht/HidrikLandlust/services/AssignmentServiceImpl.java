@@ -1,6 +1,7 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Component;
@@ -21,6 +22,9 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Autowired
     ProjectService projectService;
 
+    @Autowired
+    ComponentService componentService;
+
     @Override
     public Assignment getAssignment(Long id) {
         if (assignmentRepository.findById(id).isPresent()) {
@@ -30,7 +34,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
-    public AssignmentDto getAssignmentDtoFromId(Long id) {
+    public AssignmentDto getAssignmentDto(Long id) {
         return fromAssignment(getAssignment(id));
     }
 
@@ -53,32 +57,54 @@ public class AssignmentServiceImpl implements AssignmentService {
         Assignment assignment = toAssignment(dto);
 
 
-        Project project = projectService.retreiveProject(projectCode);
+        Project project = projectService.getProjectFromProjectCode(projectCode);
         project.addAssignment(assignment);
 
         assignment.setProject(project);
-        saveAssignment(assignment);
+        Assignment savedAssignment = assignmentRepository.save(assignment);
 
+        projectService.saveProject(project);
 
-        projectService.saveProject(project, assignment);
-
-        return dto;
+        return fromAssignment(savedAssignment);
     }
+
     public void removeAssignmentFromProject(Long assignmentId) {
         Assignment ass = getAssignment(assignmentId);
         Project project = ass.getProject();
-
-        assignmentRepository.deleteById(getAssignment(assignmentId).getId());
+        project.removeAssignment(ass);
+        projectService.saveProject(project);
     }
 
     @Override
-    public Boolean componentAlreadyExists(Component comp, Assignment ass) {
-        return (ass.getComponents().contains(comp));
+    public AssignmentDto addComponentToAssignment(Integer amount, Long assignmentId, Long componentId) {
+        Assignment assignment = getAssignment(assignmentId);
+        Integer currentAmount = assignment.getAmountOfComponentById().get(componentId);
+
+        //Add current amount of the components
+        if (currentAmount != null) amount += currentAmount;
+        assignment.setAmountOfComponentById(componentId, amount);
+
+
+        componentService.addComponentToAssignment(assignment, componentId);
+
+        Assignment savedAssignment = assignmentRepository.save(assignment);
+
+        return fromAssignment(savedAssignment);
     }
 
     @Override
-    public void saveAssignment(Assignment ass) {
-        assignmentRepository.save(ass);
+    public void removeComponentFromAssignment(Integer amount, Long assignmentId, Long componentId) {
+        Assignment assignment = getAssignment(assignmentId);
+
+        Integer currentAmount = assignment.getAmountOfComponentById().get(componentId);
+
+        assignment.setAmountOfComponentById(componentId, currentAmount - amount);
+        if (currentAmount - amount <= 0) {
+            Component component = componentService.removeComponentFromAssignment(assignment, componentId);
+            assignment.removeComponent(component);
+        }
+
+        Assignment savedAssignment = assignmentRepository.save(assignment);
     }
 
     @Override
@@ -106,11 +132,29 @@ public class AssignmentServiceImpl implements AssignmentService {
         dto.setBudget(ass.getBudget());
         dto.setDeadline(ass.getDeadline());
         dto.setProgressPercentage(ass.getProgressPercentage());
-        dto.setComponents(ass.getComponents());
         dto.setCosts(ass.getCosts());
         dto.setAssignmentCode(ass.getAssignmentCode());
-        dto.setProject(ass.getProject());
+        dto.setAmountOfComponentById(ass.getAmountOfComponentById());
 
+        dto.setProject(projectService.fromProjectToSummary(ass.getProject()));
+
+        if (ass.getComponents() != null) {
+            for (Component component : ass.getComponents()) {
+                dto.addComponent(componentService.fromComponentSummary(component));
+            }
+        }
+
+
+        return dto;
+    }
+
+    @Override
+    public AssignmentSummaryDto fromAssignmentToSummary(Assignment ass) {
+        AssignmentSummaryDto dto = new AssignmentSummaryDto();
+        dto.setId(ass.getId());
+        dto.setHoursWorked(ass.getHoursWorked());
+        dto.setDescriptionFinishedWork(ass.getDescriptionFinishedWork());
+        dto.setAssignmentCode(ass.getAssignmentCode());
 
         return dto;
     }
@@ -127,13 +171,21 @@ public class AssignmentServiceImpl implements AssignmentService {
         ass.setProgressPercentage(dto.getProgressPercentage());
         ass.setCosts(ass.getCosts());
         ass.setAssignmentCode(dto.getAssignmentCode());
-        ass.setProject(dto.getProject());
+        ass.setAmountOfComponentById(dto.getAmountOfComponentById());
 
-        if (!(dto.getComponents() == null)) {
-            for (Component comp : dto.getComponents()) {
-                if (!componentAlreadyExists(comp, ass)) ass.addComponent(comp);
-            }
-        }
+        if (dto.getProject() != null) ass.setProject(projectService.toProject(dto.getProject()));
+
+        return ass;
+    }
+
+    @Override
+    public Assignment toAssignment(AssignmentSummaryDto dto) {
+        Assignment ass = new Assignment();
+        ass.setId(dto.getId());
+        ass.setHoursWorked(dto.getHoursWorked());
+        ass.setDescriptionFinishedWork(dto.getDescriptionFinishedWork());
+        ass.setCosts(ass.getCosts());
+        ass.setAssignmentCode(dto.getAssignmentCode());
 
         return ass;
     }

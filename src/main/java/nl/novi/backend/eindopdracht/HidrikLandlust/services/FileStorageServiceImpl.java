@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileStorageServiceImpl implements  FileStorageService {
+
     private final Path root = Paths.get("uploads");
     @Override
     public void init() {
@@ -27,19 +29,36 @@ public class FileStorageServiceImpl implements  FileStorageService {
             throw new RuntimeException("Could not initialize folder for upload!");
         }
     }
+
     @Override
-    public String save(MultipartFile file) {
+    public Path createDirectory(Long componentId) {
+        Path directory = Paths.get("uploads", String.valueOf(componentId));
+        if (!Files.exists(directory)) {
+            try {
+                Files.createDirectory(directory);
+            } catch (IOException e) {
+                throw new RuntimeException("Could not initialize folder for upload!");
+            }
+        }
+
+        return directory;
+    }
+
+    @Override
+    public String save(MultipartFile file, Long componentId) {
+        Path directory = createDirectory(componentId);
         try {
-            Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()));
-            return this.root.resolve(file.getOriginalFilename()).toString();
+            Files.copy(file.getInputStream(), directory.resolve(file.getOriginalFilename()));
+            return directory.resolve(file.getOriginalFilename()).toString();
         } catch (Exception e) {
             throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
         }
     }
     @Override
-    public Resource load(String filename) {
+    public Resource load(String fileName, Long componentId) {
+        Path directory = createDirectory(componentId);
         try {
-            Path file = root.resolve(filename);
+            Path file = directory.resolve(fileName);
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() || resource.isReadable()) {
                 return resource;
@@ -52,27 +71,35 @@ public class FileStorageServiceImpl implements  FileStorageService {
     }
 
     @Override
-    public void delete(String filename) {
-        Path path = root.resolve(filename);
+    public void delete(String fileName, Long componentId) {
+        Path directory = createDirectory(componentId);
+        Path path = directory.resolve(fileName);
         File file = path.toFile();
-
-        if (!file.exists()) throw new RecordNotFoundException("Cant find file with filename: " + filename);
-
-        if (!file.delete()) throw new BadRequestException("Cant delete file with filename " + filename);
+        if (!file.exists()) throw new RecordNotFoundException("Cant find file with filename: " + fileName);
+        if (!file.delete()) throw new BadRequestException("Cant delete file with filename " + fileName);
     }
 
     @Override
     public void deleteAll() {
         FileSystemUtils.deleteRecursively(root.toFile());
     }
+
     @Override
+    public Boolean fileExists(String fileName, Long componentId) {
+        Path directory = createDirectory(componentId);
+        Path file = directory.resolve(fileName);
+
+        return Files.exists(file);
+    }
+
+    /*    @Override
     public Stream<Path> loadAll() {
         try {
             return Files.walk(this.root, 1).filter(path -> !path.equals(this.root)).map(this.root::relativize);
         } catch (IOException e) {
             throw new RuntimeException("Could not load the files!");
         }
-    }
+    }*/
 
 
 }

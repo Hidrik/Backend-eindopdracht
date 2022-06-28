@@ -7,6 +7,10 @@ VALUES
 ('PROJECT005', 'test', 50, '2022-10-05', 5000),
 ('PROJECT006', 'test', 60, '2022-10-06', 6000);
 
+INSERT INTO component(description, manufacturer, price, article_number, order_link, stock)
+VALUES
+('Dit is component met id 1', 'NOVI', 1000, 'ABC-DEF-GHI-JKL', 'https://www.bestel.nl/', 0);
+
 INSERT INTO users
 (username, email, enabled, password)
 VALUES

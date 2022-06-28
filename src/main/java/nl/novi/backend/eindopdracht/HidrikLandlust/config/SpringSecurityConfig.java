@@ -74,9 +74,13 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/projects").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.POST, "/projects").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/projects/**").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/projects/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.PUT, "/projects/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.POST, "/projects/assignments/**").hasAnyRole("USER", "ADMIN")
+                .antMatchers(HttpMethod.GET, "/projects/users").hasAnyRole("USER", "ADMIN")
+                .antMatchers(HttpMethod.POST, "/projects/users/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/projects/users/**").hasRole("ADMIN")
                 .and()
                 //AssignmentController endpoints
                 .authorizeRequests()
@@ -84,6 +88,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/assignments").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.GET, "/assignments/**").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/assignments/**").hasAnyRole("USER", "ADMIN")
+                .antMatchers(HttpMethod.PUT, "/assignments/**/**").hasAnyRole("USER", "ADMIN")
                 .and()
                 //ComponentController endpoints
                 .authorizeRequests()

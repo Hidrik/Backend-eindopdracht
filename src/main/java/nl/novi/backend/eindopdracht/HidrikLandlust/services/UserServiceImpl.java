@@ -30,14 +30,9 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto getUser(String username) {
-        UserDto dto;
-        Optional<User> user = userRepository.findById(username);
-        if (user.isPresent()){
-            dto = fromUser(user.get());
-        }else {
-            throw new RecordNotFoundException("User " + username + "does not exists.");
-        }
-        return dto;
+
+        User user = retreiveAccount(username);
+        return fromUser(user);
     }
 
     public boolean userExists(String username) {
@@ -67,22 +62,32 @@ public class UserServiceImpl implements UserService {
     }
 
     public void updateUser(String username, UserDto newUser) {
-        if (!userExists(username)) throw new RecordNotFoundException("User " + username + "does not exists.");
-        User user = userRepository.findById(username).get();
+        User user = retreiveAccount(username);
         user.setPassword(passwordEncoder.encode(newUser.getPassword()));
         userRepository.save(user);
     }
 
-    public Set<Authority> getAuthorities(String username) {
+    @Override
+    public UserDto addAccountToProject(String projectCode, String username) {
+        User user = retreiveAccount(username);
+        //user.
+        return null;
+    }
+
+    @Override
+    public User retreiveAccount(String username) {
         if (!userExists(username)) throw new RecordNotFoundException("User " + username + "does not exists.");
-        User user = userRepository.findById(username).get();
+        return userRepository.findById(username).get();
+    }
+
+    public Set<Authority> getAuthorities(String username) {
+        User user = retreiveAccount(username);
         UserDto userDto = fromUser(user);
         return userDto.getAuthorities();
     }
 
     public void addAuthority(String username, String authority) {
-        if (!userExists(username)) throw new RecordNotFoundException("User " + username + "does not exists.");
-        User user = userRepository.findById(username).get();
+        User user = retreiveAccount(username);
         Authority addAuthority = new Authority(username, authority);
 
         if (authorityAlreadyExists(user, addAuthority)) throw new UserAlreadyHasAuthorityException(username, authority);
@@ -91,8 +96,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public void removeAuthority(String username, String authority) {
-        if (!userExists(username)) throw new RecordNotFoundException("User " + username + "does not exists.");
-        User user = userRepository.findById(username).get();
+        User user = retreiveAccount(username);
         Authority authorityToRemove = user.getAuthorities().stream().filter((a) -> a.getAuthority().equalsIgnoreCase(authority)).findAny().get();
         user.removeAuthority(authorityToRemove);
         userRepository.save(user);
