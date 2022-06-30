@@ -34,6 +34,11 @@ public class Assignment extends AbstractJobData {
     @JoinColumn(name="project_id", nullable=false)
     private Project project;
 
+    @JsonIgnore
+    @ManyToOne()
+    @JoinColumn(name="account_id")
+    private Account account;
+
     public Long getId() {
         return id;
     }
@@ -113,5 +118,13 @@ public class Assignment extends AbstractJobData {
         }
         this.setCosts(cost);
         return cost;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 }

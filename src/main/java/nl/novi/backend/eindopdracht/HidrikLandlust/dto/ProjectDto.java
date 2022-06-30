@@ -16,7 +16,7 @@ public class ProjectDto extends AbstractJobDataDto {
     private Set<AssignmentSummaryDto> assignments = new HashSet<>();
 
     @JsonSerialize
-    Set<Account> accounts = new HashSet<>();
+    Set<AccountSummaryDto> accounts = new HashSet<>();
 
     public String getProjectCode() {
         return projectCode;
@@ -42,11 +42,11 @@ public class ProjectDto extends AbstractJobDataDto {
         this.assignments = assignments;
     }
 
-    public Set<Account> getAccounts() {
+    public Set<AccountSummaryDto> getAccounts() {
         return accounts;
     }
 
-    public void setAccounts(Set<Account> accounts) {
+    public void setAccounts(Set<AccountSummaryDto> accounts) {
         this.accounts = accounts;
     }
 }

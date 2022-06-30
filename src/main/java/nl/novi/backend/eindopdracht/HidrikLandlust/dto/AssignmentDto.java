@@ -1,5 +1,6 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Component;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Project;
 
@@ -10,10 +11,16 @@ public class AssignmentDto extends AbstractJobDataDto {
     private Short hoursWorked;
     private String descriptionFinishedWork;
     private String assignmentCode;
+
+    @JsonSerialize
     Set<ComponentSummaryDto> components = new HashSet<>();
+
+    @JsonSerialize
     private Map<Long, Integer> amountOfComponentById = new HashMap<>();
 
     private ProjectSummaryDto project;
+
+    private AccountSummaryDto account;
 
     public Long getId() {
         return id;
@@ -73,6 +80,14 @@ public class AssignmentDto extends AbstractJobDataDto {
 
     public void setAmountOfComponentById(Map<Long, Integer> amountOfComponentById) {
         this.amountOfComponentById = amountOfComponentById;
+    }
+
+    public AccountSummaryDto getAccount() {
+        return account;
+    }
+
+    public void setAccount(AccountSummaryDto account) {
+        this.account = account;
     }
 }
 

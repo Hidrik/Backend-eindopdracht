@@ -1,5 +1,6 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectSummaryDto;
@@ -31,34 +32,27 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
-    public List<ProjectDto> getProjects() {
+    public List<ProjectDto> getProjectsDto() {
         List<Project> projects = projectRepository.findAll();
         List<ProjectDto> projectDtos = new ArrayList<>();
         for (Project project: projects) {
             project.setCosts(calculateCosts(project));
-            projectDtos.add(fromProject(project));
+            projectDtos.add(toProjectDto(project));
         }
         return projectDtos;
     }
 
     @Override
-    public ProjectDto getProject(Long id) {
+    public ProjectDto getProjectDto(Long id) {
         Optional<Project> optionalProject = projectRepository.findById(id);
         if (optionalProject.isPresent()){
 
             Project project = optionalProject.get();
             project.setCosts(calculateCosts(project));
-            return fromProject(project);
+            return toProjectDto(project);
         } else {
             throw new RecordNotFoundException("Project not found.");
         }
-    }
-
-    @Override
-    public Long getIdFromProjectCode(String code) {
-        Project project = getProjectFromProjectCode(code);
-
-        return project.getId();
     }
 
     @Override
@@ -74,12 +68,8 @@ public class ProjectServiceImpl implements ProjectService {
         //Initialize data
         project.setProgressPercentage((byte) 0);
         project.setCosts(0);
-
-        Date now = new Date();
-        project.setCreatedOn(new Timestamp(now.getTime()));
-
-        project = projectRepository.save(project);
-            return (fromProjectToSummary(project));
+        Project savedProject = projectRepository.save(project);
+            return (toProjectSummaryDto(savedProject));
     }
 
     @Override
@@ -100,15 +90,37 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDto addAccountToProject(String projectCode, Long accountId) {
 
         Project project = getProjectFromProjectCode(projectCode);
-        Account account = accountService.retreiveAccount(accountId);
+        Account account = accountService.getAccount(accountId);
 
         if (! project.getAccounts().contains(account)) {
             project.addAccount(account);
             Project savedProject = projectRepository.save(project);
-            return fromProject(savedProject);
+            return toProjectDto(savedProject);
         }
         throw new AlreadyExistsException("Account with id " + accountId + " already is member of project with code " + projectCode);
 
+    }
+
+    @Override
+    public void removeAccountFromProject(String projectCode, Long accountId) {
+        Project project = getProjectFromProjectCode(projectCode);
+        project.removeAccount(accountService.getAccount(accountId));
+
+        projectRepository.save(project);
+    }
+
+    @Override
+    public void removeAccountFromProjects(Long accountId) {
+        Account account = accountService.getAccount(accountId);
+        Set<Project> projects = account.getProjects();
+
+        if (projects.size() > 0) {
+            for (Project project : projects) {
+                project.removeAccount(account);
+            }
+        }
+
+        projectRepository.saveAll(projects);
     }
 
     @Override
@@ -155,7 +167,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectDto fromProject(Project project) {
+    public ProjectDto toProjectDto(Project project) {
         ProjectDto dto = new ProjectDto();
 
         dto.setProjectCode(project.getProjectCode());
@@ -163,14 +175,22 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setDeadline(project.getDeadline());
         dto.setDescription(project.getDescription());
         dto.setProgressPercentage(project.getProgressPercentage());
-        dto.setAccounts(project.getAccounts());
         dto.setId(project.getId());
         dto.setCosts(project.getCosts());
+
+        if (project.getAccounts().size() > 0) {
+            Set<AccountSummaryDto> accountSummaryDtos = new HashSet<>();
+            for (Account acc : project.getAccounts()) {
+                accountSummaryDtos.add(accountService.toAccountSummaryDto(acc));
+            }
+            dto.setAccounts(accountSummaryDtos);
+        }
+
 
         Set<AssignmentSummaryDto> assignmentSummaryDtos = new HashSet<>();
         if (project.getAssignments() != null) {
             for (Assignment assignment : project.getAssignments()) {
-                AssignmentSummaryDto assignmentSummaryDto = assignmentService.fromAssignmentToSummary(assignment);
+                AssignmentSummaryDto assignmentSummaryDto = assignmentService.toAssignmentSummaryDto(assignment);
                 assignmentSummaryDtos.add(assignmentSummaryDto);
             }
             dto.setAssignments(assignmentSummaryDtos);
@@ -193,7 +213,8 @@ public class ProjectServiceImpl implements ProjectService {
         proj.setCosts(dto.getCosts());
 
         if (dto.getAccounts() != null) {
-            for (Account acc : dto.getAccounts()) {
+            for (AccountSummaryDto accountSummaryDto : dto.getAccounts()) {
+                Account acc = accountService.toAccount(accountSummaryDto);
                 if (!proj.getAccounts().contains(acc)) proj.addAccount(acc);
             }
         }
@@ -211,7 +232,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectSummaryDto fromProjectToSummary(Project project) {
+    public ProjectSummaryDto toProjectSummaryDto(Project project) {
         ProjectSummaryDto dto = new ProjectSummaryDto();
 
         dto.setProjectCode(project.getProjectCode());

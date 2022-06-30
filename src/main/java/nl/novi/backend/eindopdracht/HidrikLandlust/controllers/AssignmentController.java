@@ -1,6 +1,7 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.AssignmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping(value = "/assignments")
 public class AssignmentController {
     @Autowired
@@ -25,27 +27,47 @@ public class AssignmentController {
     public ResponseEntity<AssignmentDto> getAssignment(@PathVariable("id") Long id) {
         AssignmentDto dto = assignmentService.getAssignmentDto(id);
 
-        return ResponseEntity.accepted().body(dto);
+        return ResponseEntity.ok().body(dto);
+    }
+
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<AssignmentDto> updateAssignment(@PathVariable("id") Long id, @RequestBody AssignmentSummaryDto summaryDto) {
+        assignmentService.updateAssignmentFinishedWork(id, summaryDto);
+
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Object> deleteAssignment(@PathVariable("id") Long id) {
-        assignmentService.removeAssignmentFromProject(id);
+        assignmentService.deleteAssignment(id);
 
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.ok().build();
     }
 
-    @PutMapping(value = "/{id}/{componentId}") //TODO
+    @PutMapping(value = "/{id}/components/{componentId}") //TODO
     public ResponseEntity<Object> addComponent(@PathVariable("id") Long assignmentId, @PathVariable("componentId") Long componentId, @RequestBody Integer amount) {
         assignmentService.addComponentToAssignment(amount, assignmentId, componentId);
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping(value = "/{id}/{componentId}") //TODO
+    @DeleteMapping(value = "/{id}/components/{componentId}")
     public ResponseEntity<Object> removeComponent(@PathVariable("id") Long assignmentId, @PathVariable("componentId") Long componentId, @RequestBody Integer amount) {
         assignmentService.removeComponentFromAssignment(amount, assignmentId, componentId);
         return ResponseEntity.accepted().build();
     }
+
+    @PutMapping(value = "/{id}/accounts/{accountId}")
+    public ResponseEntity<Object> addAccountToAssignment(@PathVariable("id") Long assignmentId, @PathVariable("accountId") Long accountId) {
+        assignmentService.addAccountToAssignment(assignmentId, accountId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping(value = "/{id}/accounts/{accountId}")
+    public ResponseEntity<Object> deleteAccountFromAssignment(@PathVariable("id") Long assignmentId, @PathVariable("accountId") Long accountId) {
+        assignmentService.removeAccountFromAssignment(assignmentId, accountId);
+        return ResponseEntity.ok().build();
+    }
+
 }
 
 

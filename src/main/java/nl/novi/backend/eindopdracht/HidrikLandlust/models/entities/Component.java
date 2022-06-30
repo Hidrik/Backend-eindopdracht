@@ -1,10 +1,14 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.io.File;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Set;
 
 @Entity
@@ -46,6 +50,13 @@ public class Component {
             inverseJoinColumns = @JoinColumn(name = "assignment_id"))
     Set<Assignment> assignments;
 
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdOn;
+
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedOn;
 
     public Long getId() {
         return id;
@@ -133,5 +144,21 @@ public class Component {
 
     public void deleteAssignment(Assignment ass) {
         assignments.remove(ass);
+    }
+
+    public Date getCreatedOn() {
+        return createdOn;
+    }
+
+    public void setCreatedOn(Date createdOn) {
+        this.createdOn = createdOn;
+    }
+
+    public Date getUpdatedOn() {
+        return updatedOn;
+    }
+
+    public void setUpdatedOn(Date updatedOn) {
+        this.updatedOn = updatedOn;
     }
 }

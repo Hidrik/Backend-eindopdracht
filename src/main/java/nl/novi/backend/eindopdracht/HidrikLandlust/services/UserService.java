@@ -14,23 +14,17 @@ import java.util.Set;
 @Service
 public interface UserService {
 
-    List<UserDto> getUsers();
+    List<UserDto> getUsersDto();
 
-    UserDto getUser(String username);
+    UserDto getUserDto(String username);
 
-    boolean userExists(String username);
-
-    boolean emailExists(String email);
+    User getUser(String username);
 
     UserDto createUser(UserDto userDto);
 
     void deleteUser(String username);
 
     void updateUser(String username, UserDto newUser);
-
-    UserDto addAccountToProject(String projectCode, String username);
-
-    User retreiveAccount(String username);
 
     Set<Authority> getAuthorities(String username);
 
@@ -40,9 +34,13 @@ public interface UserService {
 
     boolean authorityAlreadyExists(User user, Authority addedAuthority);
 
+    boolean userExists(String username);
+
+    boolean emailExists(String email);
+
     String maskPassword();
 
-    UserDto fromUser(User user);
+    UserDto toUserDto(User user);
 
     User toUser(UserDto userDto);
 

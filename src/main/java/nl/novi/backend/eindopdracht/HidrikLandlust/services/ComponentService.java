@@ -43,9 +43,9 @@ public interface ComponentService {
 
     Component toComponent(ComponentDto dto);
 
-    ComponentSummaryDto fromComponentSummary(Component component);
+    ComponentSummaryDto toComponentSummaryDto(Component component);
 
-    ComponentDto fromComponent(Component comp);
+    ComponentDto toComponentDto(Component comp);
 
-    List<ComponentDto> fromComponents(List<Component> components);
+    List<ComponentDto> toComponentDtos(List<Component> components);
 }

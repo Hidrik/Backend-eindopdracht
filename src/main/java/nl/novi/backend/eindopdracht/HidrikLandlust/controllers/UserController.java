@@ -2,10 +2,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.UserService;
-import nl.novi.backend.eindopdracht.HidrikLandlust.services.UserServiceImpl;
-import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -25,7 +22,7 @@ public class UserController {
     @GetMapping(value = "")
     public ResponseEntity<List<UserDto>> getUsers() {
 
-        List<UserDto> userDtos = userService.getUsers();
+        List<UserDto> userDtos = userService.getUsersDto();
 
         return ResponseEntity.ok().body(userDtos);
     }
@@ -33,7 +30,7 @@ public class UserController {
     @GetMapping(value = "/{username}")
     public ResponseEntity<UserDto> getUser(@PathVariable("username") String username) {
 
-        UserDto optionalUser = userService.getUser(username);
+        UserDto optionalUser = userService.getUserDto(username);
 
 
         return ResponseEntity.ok().body(optionalUser);

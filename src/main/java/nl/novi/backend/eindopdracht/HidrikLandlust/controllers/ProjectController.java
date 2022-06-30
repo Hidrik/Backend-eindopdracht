@@ -3,7 +3,6 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectSummaryDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/projects")
+@CrossOrigin
 public class ProjectController {
 
     @Autowired
@@ -28,13 +28,13 @@ public class ProjectController {
 
     @GetMapping(value = "")
     public ResponseEntity<List<ProjectDto>> getAllProjects() {
-        List<ProjectDto> projectDtoList = projectService.getProjects();
+        List<ProjectDto> projectDtoList = projectService.getProjectsDto();
         return ResponseEntity.ok().body(projectDtoList);
     }
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<ProjectDto> getOneProject(@PathVariable("id") Long id) {
-        ProjectDto optionalProject = projectService.getProject(id);
+        ProjectDto optionalProject = projectService.getProjectDto(id);
         return ResponseEntity.ok().body(optionalProject);
     }
 
@@ -62,7 +62,7 @@ public class ProjectController {
         return ResponseEntity.accepted().build();
     }
 
-    @PostMapping(value = "/assignments/{projectCode}")
+    @PutMapping(value = "/{projectCode}/assignments/")
     public ResponseEntity<AssignmentDto> addAssignmentToProject(@PathVariable("projectCode") String projectCode, @RequestBody AssignmentDto dto) {
         AssignmentDto receivedDto = assignmentService.addAssignmentToProject(projectCode, dto);
 
@@ -72,14 +72,21 @@ public class ProjectController {
         return ResponseEntity.created(location).body(receivedDto);
     }
 
-    @PostMapping(value = "/users/{projectCode}")
-    public ResponseEntity<ProjectDto> addAccountToProject(@PathVariable("projectCode") String projectCode, @RequestBody Long accountId) {
+    @PutMapping(value = "/{projectCode}/accounts/{accountId}")
+    public ResponseEntity<ProjectDto> addAccountToProject(@PathVariable("projectCode") String projectCode, @PathVariable("accountId")  Long accountId) {
         ProjectDto dto = projectService.addAccountToProject(projectCode, accountId);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/users/{projectCode}")
                 .buildAndExpand(dto.getId()).toUri();
 
         return ResponseEntity.created(location).body(dto);
+    }
+
+    @DeleteMapping(value = "/{projectCode}/accounts/{accountId}")
+    public ResponseEntity<ProjectDto> removeAccountFromProject(@PathVariable("projectCode") String projectCode, @PathVariable("accountId")  Long accountId) {
+        projectService.removeAccountFromProjects(accountId);
+
+        return ResponseEntity.ok().build();
     }
 
 }

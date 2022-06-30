@@ -1,6 +1,5 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentSummaryDto;
@@ -9,6 +8,8 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundExce
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Component;
 import nl.novi.backend.eindopdracht.HidrikLandlust.repositories.ComponentRepository;
+import nl.novi.backend.eindopdracht.HidrikLandlust.utils.FileStorage;
+import nl.novi.backend.eindopdracht.HidrikLandlust.utils.FileStorageImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -21,21 +22,21 @@ public class ComponentServiceImpl implements ComponentService {
     @Autowired
     ComponentRepository componentRepository;
 
-    @Autowired
-    FileStorageService storageService;
+    FileStorage fileStorage = new FileStorageImpl();
 
+    //Not autowired because of infinite recursion
     AssignmentService assignmentService = new AssignmentServiceImpl();
 
     @Override
     public List<ComponentDto> getComponentsDto() {
         List<Component> components = componentRepository.findAll();
-        return fromComponents(components);
+        return toComponentDtos(components);
     }
 
     @Override
     public ComponentDto getComponentDto(Long id) {
         Component component = getComponent(id);
-        return fromComponent(component);
+        return toComponentDto(component);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class ComponentServiceImpl implements ComponentService {
 
         Component component = toComponent(dto);
         Component savedComponent = componentRepository.save(component);
-        return fromComponent(savedComponent);
+        return toComponentDto(savedComponent);
     }
 
     @Override
@@ -66,7 +67,7 @@ public class ComponentServiceImpl implements ComponentService {
 
         Component savedComponent = componentRepository.save(comp);
 
-        return fromComponent(savedComponent);
+        return toComponentDto(savedComponent);
     }
 
     @Override
@@ -108,13 +109,13 @@ public class ComponentServiceImpl implements ComponentService {
         String oldFileName = getComponent(id).getFileName();
         Boolean oldFileExists = false;
         if (oldFileName != null){
-            oldFileExists = storageService.fileExists(oldFileName, id);
+            oldFileExists = fileStorage.fileExists(oldFileName, id);
         }
 
         //First delete old- and save new file.
         try {
-            if (oldFileName != null & oldFileExists) storageService.delete(oldFileName, id);
-            url = storageService.save(file, id);
+            if (oldFileName != null & oldFileExists) fileStorage.delete(oldFileName, id);
+            url = fileStorage.save(file, id);
         } catch (Exception e) {
             throw new InternalError("Uploading file failed, cant save file: " + fileName);
         }
@@ -125,7 +126,7 @@ public class ComponentServiceImpl implements ComponentService {
             saveFileInfo(id, fileName, url);
         } catch (Exception ex) {
             //If writing to DB fails -> the component must be deleted.
-            storageService.delete(fileName, id);
+            fileStorage.delete(fileName, id);
             throw new InternalError("Uploading file failed");
         }
     }
@@ -134,7 +135,7 @@ public class ComponentServiceImpl implements ComponentService {
     public Resource loadFile(Long id) {
         String fileName = getComponent(id).getFileName();
         try {
-            return storageService.load(fileName, id);
+            return fileStorage.load(fileName, id);
         } catch (Exception e) {
             if (fileName == null) {
                 throw new RecordNotFoundException("Component with id " + id + " has no file attached.");
@@ -149,7 +150,7 @@ public class ComponentServiceImpl implements ComponentService {
     public void deleteFile(Long id) {
         String fileName = deleteFileInfo(id);
         try {
-            storageService.delete(fileName, id);
+            fileStorage.delete(fileName, id);
         } catch (Exception e) {
             throw new InternalFailureException("File from component with id " + id + " can not be removed or is already removed.");
         }
@@ -161,7 +162,7 @@ public class ComponentServiceImpl implements ComponentService {
         component.setFileName(fileName);
         component.setFileUrl(url);
 
-        Component savedComponent = componentRepository.save(component);
+        componentRepository.save(component);
     }
 
     @Override
@@ -207,7 +208,7 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public ComponentSummaryDto fromComponentSummary(Component component) {
+    public ComponentSummaryDto toComponentSummaryDto(Component component) {
         ComponentSummaryDto dto = new ComponentSummaryDto();
         dto.setArticleNumber(component.getArticleNumber());
         dto.setDescription(component.getDescription());
@@ -220,7 +221,7 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public ComponentDto fromComponent(Component comp) {
+    public ComponentDto toComponentDto(Component comp) {
 
         ComponentDto dto = new ComponentDto();
 
@@ -237,8 +238,11 @@ public class ComponentServiceImpl implements ComponentService {
 
 
         Set<AssignmentSummaryDto> assignmentSummaryDtos = new HashSet<>();
+
+        if (comp.getAssignments() == null) return dto;
+
         for (Assignment ass : comp.getAssignments()) {
-            assignmentSummaryDtos.add(assignmentService.fromAssignmentToSummary(ass));
+            assignmentSummaryDtos.add(assignmentService.toAssignmentSummaryDto(ass));
         }
         dto.setAssignments(assignmentSummaryDtos);
 
@@ -246,10 +250,10 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public List<ComponentDto> fromComponents(List<Component> components) {
+    public List<ComponentDto> toComponentDtos(List<Component> components) {
         List<ComponentDto> dtos = new ArrayList<>();
         for (Component comp: components) {
-            dtos.add(fromComponent(comp));
+            dtos.add(toComponentDto(comp));
         }
         return dtos;
     }

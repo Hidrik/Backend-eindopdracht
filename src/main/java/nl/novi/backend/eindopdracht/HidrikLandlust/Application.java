@@ -1,6 +1,6 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust;
 
-import nl.novi.backend.eindopdracht.HidrikLandlust.services.FileStorageService;
+import nl.novi.backend.eindopdracht.HidrikLandlust.utils.FileStorage;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,7 +11,7 @@ import javax.annotation.Resource;
 public class Application implements CommandLineRunner {
 
 	@Resource
-	FileStorageService storageService;
+	FileStorage storageService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);

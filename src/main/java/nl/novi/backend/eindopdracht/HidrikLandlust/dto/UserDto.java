@@ -12,7 +12,7 @@ public class UserDto {
     public String password;
     public Boolean enabled = true;
     public String email;
-    public Account account;
+    public AccountSummaryDto account;
 
     @JsonSerialize
     public Set<Authority> authorities;
@@ -57,11 +57,11 @@ public class UserDto {
         this.email = email;
     }
 
-    public Account getAccount() {
+    public AccountSummaryDto getAccount() {
         return account;
     }
 
-    public void setAccount(Account account) {
+    public void setAccount(AccountSummaryDto account) {
         this.account = account;
     }
 }

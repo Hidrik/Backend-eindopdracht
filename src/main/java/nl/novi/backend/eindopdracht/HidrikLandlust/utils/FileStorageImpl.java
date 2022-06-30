@@ -1,4 +1,4 @@
-package nl.novi.backend.eindopdracht.HidrikLandlust.services;
+package nl.novi.backend.eindopdracht.HidrikLandlust.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,11 +6,9 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -18,7 +16,7 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class FileStorageServiceImpl implements  FileStorageService {
+public class FileStorageImpl implements FileStorage {
 
     private final Path root = Paths.get("uploads");
     @Override

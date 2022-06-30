@@ -3,6 +3,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Component;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Project;
@@ -10,7 +11,9 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.repositories.AssignmentReposi
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -25,6 +28,9 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Autowired
     ComponentService componentService;
 
+    @Autowired
+    AccountService accountService;
+
     @Override
     public Assignment getAssignment(Long id) {
         if (assignmentRepository.findById(id).isPresent()) {
@@ -35,16 +41,46 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     public AssignmentDto getAssignmentDto(Long id) {
-        return fromAssignment(getAssignment(id));
+        return toAssignmentDto(getAssignment(id));
     }
 
     @Override
     public List<AssignmentDto> getAllAssignments() {
         List<AssignmentDto> dtos = new ArrayList<>();
         for (Assignment ass: assignmentRepository.findAll()){
-            dtos.add(fromAssignment(ass));
+            dtos.add(toAssignmentDto(ass));
         }
         return dtos;
+    }
+
+    @Override
+    public void updateAssignment(Long id, AssignmentDto dto) {
+        //TODO
+    }
+
+    @Override
+    public void updateAssignmentFinishedWork(Long id, AssignmentSummaryDto summaryDto) {
+        Assignment assignment = getAssignment(id);
+        String oldDescription = assignment.getDescriptionFinishedWork();
+
+        String newDescription = "";
+        if (oldDescription == "") newDescription += " ||| ";
+
+        newDescription += new Timestamp(new Date().getTime()) + ": " + summaryDto.getDescriptionFinishedWork() + " ||| ";
+
+        assignment.setDescriptionFinishedWork(oldDescription + newDescription);
+
+        Short hoursWorked = (short) (assignment.getHoursWorked() + summaryDto.getHoursWorked());
+        assignment.setHoursWorked(hoursWorked);
+
+        assignmentRepository.save(assignment);
+    }
+
+    public void deleteAssignment(Long assignmentId) {
+        Assignment ass = getAssignment(assignmentId);
+        Project project = ass.getProject();
+        project.removeAssignment(ass);
+        projectService.saveProject(project);
     }
 
     @Override
@@ -65,14 +101,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         projectService.saveProject(project);
 
-        return fromAssignment(savedAssignment);
-    }
-
-    public void removeAssignmentFromProject(Long assignmentId) {
-        Assignment ass = getAssignment(assignmentId);
-        Project project = ass.getProject();
-        project.removeAssignment(ass);
-        projectService.saveProject(project);
+        return toAssignmentDto(savedAssignment);
     }
 
     @Override
@@ -89,7 +118,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         Assignment savedAssignment = assignmentRepository.save(assignment);
 
-        return fromAssignment(savedAssignment);
+        return toAssignmentDto(savedAssignment);
     }
 
     @Override
@@ -108,6 +137,28 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
+    public void addAccountToAssignment(Long assignmentId, Long accountId) {
+        Assignment assignment = getAssignment(assignmentId);
+        Account account = accountService.getAccount(accountId);
+
+        account.addAssignment(assignment);
+
+        assignment.setAccount(account);
+
+
+        assignmentRepository.save(assignment);
+    }
+
+
+    public void removeAccountFromAssignment(Long assignmentId, Long accountId) {
+        Assignment assignment = getAssignment(assignmentId);
+        assignment.setAccount(null);
+        assignmentRepository.save(assignment);
+
+        accountService.removeAssignmentFromAccount(assignment, accountId);
+    }
+
+    @Override
     public boolean assignmentCodeExists(String assignmentCode) {
         return assignmentRepository.existsByAssignmentCode(assignmentCode);
     }
@@ -123,7 +174,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
-    public AssignmentDto fromAssignment(Assignment ass) {
+    public AssignmentDto toAssignmentDto(Assignment ass) {
         AssignmentDto dto = new AssignmentDto();
         dto.setId(ass.getId());
         dto.setHoursWorked(ass.getHoursWorked());
@@ -136,11 +187,15 @@ public class AssignmentServiceImpl implements AssignmentService {
         dto.setAssignmentCode(ass.getAssignmentCode());
         dto.setAmountOfComponentById(ass.getAmountOfComponentById());
 
-        dto.setProject(projectService.fromProjectToSummary(ass.getProject()));
+        //Could be null
+        if (ass.getAccount() != null) dto.setAccount(accountService.toAccountSummaryDto(ass.getAccount()));
+
+        //Cant be null, assignment cant exist without project
+        dto.setProject(projectService.toProjectSummaryDto(ass.getProject()));
 
         if (ass.getComponents() != null) {
             for (Component component : ass.getComponents()) {
-                dto.addComponent(componentService.fromComponentSummary(component));
+                dto.addComponent(componentService.toComponentSummaryDto(component));
             }
         }
 
@@ -149,7 +204,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
-    public AssignmentSummaryDto fromAssignmentToSummary(Assignment ass) {
+    public AssignmentSummaryDto toAssignmentSummaryDto(Assignment ass) {
         AssignmentSummaryDto dto = new AssignmentSummaryDto();
         dto.setId(ass.getId());
         dto.setHoursWorked(ass.getHoursWorked());
@@ -173,6 +228,8 @@ public class AssignmentServiceImpl implements AssignmentService {
         ass.setAssignmentCode(dto.getAssignmentCode());
         ass.setAmountOfComponentById(dto.getAmountOfComponentById());
 
+
+        if (dto.getAccount() != null) ass.setAccount(accountService.toAccount(dto.getAccount()));
         if (dto.getProject() != null) ass.setProject(projectService.toProject(dto.getProject()));
 
         return ass;

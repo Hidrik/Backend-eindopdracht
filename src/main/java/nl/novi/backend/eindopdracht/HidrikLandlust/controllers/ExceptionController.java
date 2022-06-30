@@ -23,24 +23,6 @@ public class ExceptionController {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(value = UserAlreadyExistsException.class)
-    public ResponseEntity<Object> exception(UserAlreadyExistsException exception) {
-
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(value = EmailAlreadyInUseException.class)
-    public ResponseEntity<Object> exception(EmailAlreadyInUseException exception) {
-
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(value = UserAlreadyHasAuthorityException.class)
-    public ResponseEntity<Object> exception(UserAlreadyHasAuthorityException exception) {
-
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.CONFLICT);
-    }
-
     @ExceptionHandler(value = AlreadyExistsException.class)
     public ResponseEntity<Object> exception(AlreadyExistsException exception) {
 
@@ -56,7 +38,7 @@ public class ExceptionController {
     @ExceptionHandler(value = InternalFailureException.class)
     public ResponseEntity<Object> exception(InternalFailureException exception) {
 
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }

@@ -20,21 +20,29 @@ public interface AssignmentService {
 
     AssignmentDto getAssignmentDto(Long id);
 
+    void updateAssignment(Long id, AssignmentDto dto);
+
+    void updateAssignmentFinishedWork(Long id, AssignmentSummaryDto summaryDto);
+
+    void deleteAssignment(Long id);
+
     AssignmentDto addAssignmentToProject(String projectCode, AssignmentDto dto);
 
     AssignmentDto addComponentToAssignment(Integer amount, Long assignmentId, Long componentId);
 
     void removeComponentFromAssignment(Integer amount, Long assignmentId, Long componentId);
 
-    void removeAssignmentFromProject(Long id);
+    void addAccountToAssignment(Long assignmentId, Long accountId);
 
-    boolean assignmentCodeExists(String assignmentCode);
+    void removeAccountFromAssignment(Long assignmentId, Long accountId);
 
     String generateAssignmentCode(String projectCode);
 
-    AssignmentDto fromAssignment(Assignment ass);
+    boolean assignmentCodeExists(String assignmentCode);
 
-    AssignmentSummaryDto fromAssignmentToSummary(Assignment ass);
+    AssignmentDto toAssignmentDto(Assignment ass);
+
+    AssignmentSummaryDto toAssignmentSummaryDto(Assignment ass);
 
     Assignment toAssignment(AssignmentDto dto);
 
