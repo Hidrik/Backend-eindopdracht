@@ -1,5 +1,6 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.AbstractJobData;
 
 import javax.persistence.*;
@@ -16,14 +17,16 @@ public class Project extends AbstractJobData {
     @Column(name = "project_code", nullable = false, unique = true)
     private String projectCode;
 
+
+    @JsonIgnore
     @OneToMany(
             targetEntity = Assignment.class,
-            mappedBy = "id",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER)
     private Set<Assignment> assignments = new HashSet<>();
 
+    @JsonIgnore
     @ManyToMany(targetEntity = Account.class)
     @JoinTable(
             name = "project_members",
@@ -62,5 +65,15 @@ public class Project extends AbstractJobData {
     }
     public void removeAccount(Account account) {
         this.accounts.remove(account);
+    }
+
+    @Override
+    public Integer getCosts() {
+        Integer cost = 0;
+        for (Assignment ass : assignments) {
+            cost += ass.getCosts();
+        }
+        this.setCosts(cost);
+        return cost;
     }
 }

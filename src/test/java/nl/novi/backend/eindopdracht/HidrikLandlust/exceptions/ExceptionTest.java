@@ -39,25 +39,4 @@ public class ExceptionTest {
 
         assertNull(ex.getMessage());
     }
-
-    @Test
-    void emailAlreadyInUseExceptionGivesMessage() {
-        EmailAlreadyInUseException ex = new EmailAlreadyInUseException(testString);
-
-        assertEquals(ex.getMessage(),"Email " + testString + " already in use.");
-    }
-
-    @Test
-    void userAlreadyExistsExceptionGivesMessage() {
-        UserAlreadyExistsException ex = new UserAlreadyExistsException(testString);
-
-        assertEquals(ex.getMessage(),"User " + testString + " already exists.");
-    }
-
-    @Test
-    void userAlreadyHasAuthorityExceptionGivesMessage() {
-        UserAlreadyHasAuthorityException ex = new UserAlreadyHasAuthorityException(testString, stringTest);
-
-        assertEquals(ex.getMessage(),"User " + testString + " already has authority " + stringTest + ".");
-    }
 }

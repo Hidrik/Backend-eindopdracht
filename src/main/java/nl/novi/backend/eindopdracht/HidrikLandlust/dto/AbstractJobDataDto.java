@@ -1,5 +1,7 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.time.LocalDate;
@@ -8,8 +10,12 @@ public class AbstractJobDataDto {
     private String description;
 
     private Byte progressPercentage;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate deadline;
     private Integer budget;
+
+    private Integer costs;
 
     public String getDescription() {
         return description;
@@ -41,5 +47,13 @@ public class AbstractJobDataDto {
 
     public void setBudget(Integer budget) {
         this.budget = budget;
+    }
+
+    public Integer getCosts() {
+        return costs;
+    }
+
+    public void setCosts(Integer costs) {
+        this.costs = costs;
     }
 }

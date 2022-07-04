@@ -3,6 +3,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,16 +19,21 @@ public class AccountTest {
         Long id = 1L;
         String firstName = "unit";
         String lastName = "test";
+        Date now = new Date(new Date().getTime());
 
         account.setEmployeeFunction(employeeFunction);
         account.setId(id);
         account.setFirstName(firstName);
         account.setLastName(lastName);
+        account.setCreatedOn(now);
+        account.setUpdatedOn(now);
 
         assertEquals(account.getEmployeeFunction(), employeeFunction);
         assertEquals(account.getId(), id);
         assertEquals(account.getFirstName(), firstName);
         assertEquals(account.getLastName(), lastName);
+        assertEquals(account.getCreatedOn(), now);
+        assertEquals(account.getUpdatedOn(), now);
     }
 
     @Test

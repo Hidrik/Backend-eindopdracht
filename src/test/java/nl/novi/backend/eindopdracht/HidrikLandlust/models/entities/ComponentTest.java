@@ -21,8 +21,8 @@ public class ComponentTest {
         String articleNumber = "12345";
         String orderLink = "http://test.test/";
         String fileName = "file";
-        String fileType = ".test";
-        File fileData = new File("file.test");
+        String fileUrl = ".test";
+        //File fileData = new File("file.test");
 
         comp.setId(id);
         comp.setDescription(description);
@@ -32,8 +32,8 @@ public class ComponentTest {
         comp.setArticleNumber(articleNumber);
         comp.setOrderLink(orderLink);
         comp.setFileName(fileName);
-        comp.setFileType(fileType);
-        comp.setFileData(fileData);
+        comp.setFileUrl(fileUrl);
+        //comp.setFileData(fileData);
 
         assertEquals(comp.getId(), id);
         assertEquals(comp.getDescription(), description);
@@ -43,7 +43,7 @@ public class ComponentTest {
         assertEquals(comp.getArticleNumber(), articleNumber);
         assertEquals(comp.getOrderLink(), orderLink);
         assertEquals(comp.getFileName(), fileName);
-        assertEquals(comp.getFileType(), fileType);
-        assertEquals(comp.getFileData(), fileData);
+        assertEquals(comp.getFileUrl(), fileUrl);
+        //assertEquals(comp.getFileData(), fileData);
     }
 }

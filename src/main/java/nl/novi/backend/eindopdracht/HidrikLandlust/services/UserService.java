@@ -1,7 +1,9 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
 
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.User;
 import org.springframework.stereotype.Service;
@@ -12,15 +14,13 @@ import java.util.Set;
 @Service
 public interface UserService {
 
-    List<UserDto> getUsers();
+    List<UserDto> getUsersDto();
 
-    UserDto getUser(String username);
+    UserDto getUserDto(String username);
 
-    boolean userExists(String username);
+    User getUser(String username);
 
-    boolean emailExists(String email);
-
-    String createUser(UserDto userDto);
+    UserDto createUser(UserDto userDto);
 
     void deleteUser(String username);
 
@@ -34,30 +34,14 @@ public interface UserService {
 
     boolean authorityAlreadyExists(User user, Authority addedAuthority);
 
+    boolean userExists(String username);
 
-    static UserDto fromUser(User user){
+    boolean emailExists(String email);
 
-        var dto = new UserDto();
+    String maskPassword();
 
-        dto.setUsername(user.getUsername());
-        dto.setPassword(user.getPassword());
-        dto.setEnabled(user.isEnabled());
-        dto.setEmail(user.getEmail());
-        dto.setAuthorities(user.getAuthorities());
+    UserDto toUserDto(User user);
 
-        return dto;
-    }
-
-    static User toUser(UserDto userDto){
-
-        var user = new User();
-
-        user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
-        user.setEnabled(userDto.getEnabled());
-        user.setEmail(userDto.getEmail());
-
-        return user;
-    }
+    User toUser(UserDto userDto);
 
 }

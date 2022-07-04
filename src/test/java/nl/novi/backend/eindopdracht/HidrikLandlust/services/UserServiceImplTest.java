@@ -1,10 +1,11 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.EmailAlreadyInUseException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.AlreadyExistsException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.UserAlreadyExistsException;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.UserAlreadyHasAuthorityException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.User;
 import nl.novi.backend.eindopdracht.HidrikLandlust.repositories.UserRepository;
@@ -30,7 +31,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 public class UserServiceImplTest {
     @Autowired
-    UserService userService = new UserServiceImpl();
+    UserService userService;
 
     @MockBean
     UserRepository userRepository;
@@ -39,7 +40,7 @@ public class UserServiceImplTest {
     private PasswordEncoder passwordEncoder;
 
     @Test
-    void fromUserToUserDto() {
+    void fromUserToUserDtoSucceeds() {
         UserDto testDto = generateUserDto();
 
         User user = new User();
@@ -49,34 +50,40 @@ public class UserServiceImplTest {
         user.setEmail(testDto.getEmail());
         user.addAuthority(testDto.getAuthorities().iterator().next());
 
-        UserDto generatedDto = UserService.fromUser(user);
+        UserDto generatedDto = userService.toUserDto(user);
+
+        //Because a new instance is made of AccountSummaryDto
+        generatedDto.setAccount(testDto.getAccount());
 
         assertThat(generatedDto).isEqualToComparingFieldByField(testDto);
     }
 
     @Test
-    void fromUserDtoToUser() {
+    void fromUserDtoToUserSucceeds() {
         UserDto dto = generateUserDto();
+        dto.setAccount(null);
 
         User testUser = new User();
         testUser.setUsername(dto.getUsername());
         testUser.setPassword(dto.getPassword());
         testUser.setEnabled(dto.getEnabled());
         testUser.setEmail(dto.getEmail());
+
         //Authorities aren't passed through the function so isn't used in the test
 
-        User generatedUser = UserService.toUser(dto);
+        User generatedUser = userService.toUser(dto);
 
         assertThat(generatedUser).isEqualToComparingFieldByField(testUser);
     }
 
     @Test
-    void getAllUsers() {
+    void getAllUsersSucceeds() {
         List<UserDto> usersDto = new ArrayList<>();
         List<User> users = new ArrayList<>();
 
         UserDto userDto = generateUserDto();
-        User user = UserService.toUser(userDto);
+        User user = userService.toUser(userDto);
+
 
         userDto.setAuthorities(user.getAuthorities());
 
@@ -85,7 +92,11 @@ public class UserServiceImplTest {
 
         when(userRepository.findAll()).thenReturn(users);
 
-        assertThat(userService.getUsers().get(0)).isEqualToComparingFieldByField(usersDto.get(0));
+        //This is done because otherwise 2 different instances of AccountSummaryDto is used and this test fails
+        UserDto recievedUserDto = userService.getUsersDto().get(0);
+        recievedUserDto.setAccount(userDto.getAccount());
+
+        assertThat(recievedUserDto).isEqualToComparingFieldByField(usersDto.get(0));
     }
 
     @Test
@@ -94,18 +105,27 @@ public class UserServiceImplTest {
 
         when(userRepository.findAll()).thenReturn(users);
 
-        assertEquals(userService.getUsers().size(), 0);
+        assertEquals(userService.getUsersDto().size(), 0);
     }
 
     @Test
     void getOneUserSucceeds() {
         UserDto userDto = generateUserDto();
-        User user = UserService.toUser(userDto);
+        User user = userService.toUser(userDto);
         userDto.setAuthorities(user.getAuthorities());
 
-        when(userRepository.findById(userDto.getUsername())).thenReturn(Optional.of(user));
+        when(userRepository.findById(any(String.class))).thenReturn(Optional.of(user));
+        when(userRepository.existsById(any(String.class))).thenReturn(true);
 
-        assertThat(userService.getUser(userDto.getUsername())).isEqualToComparingFieldByField(userDto);
+        UserDto recievedDto = userService.getUserDto(userDto.getUsername());
+
+        assertEquals(recievedDto.getAuthorities(), userDto.getAuthorities());
+        assertEquals(recievedDto.getEmail(), userDto.getEmail());
+        assertEquals(recievedDto.getUsername(), userDto.getUsername());
+        assertEquals(recievedDto.getEnabled(), userDto.getEnabled());
+        assertEquals(recievedDto.getPassword(), userDto.getPassword());
+
+        //Can't assertEquals the Account due to different instances
     }
 
     @Test
@@ -114,11 +134,9 @@ public class UserServiceImplTest {
 
         when(userRepository.findById(userDto.getUsername())).thenReturn(Optional.empty());
 
-        RecordNotFoundException exception = assertThrows(RecordNotFoundException.class, () -> {
-            userService.getUser(userDto.getUsername());
-        });
+        RecordNotFoundException exception = assertThrows(RecordNotFoundException.class, () -> userService.getUserDto(userDto.getUsername()));
 
-        assertEquals(exception.getMessage(), "User " + userDto.getUsername() + "does not exists.");
+        assertEquals(exception.getMessage(), "User " + userDto.getUsername() + " does not exists.");
     }
 
     @Test
@@ -144,65 +162,71 @@ public class UserServiceImplTest {
     @Test
     void creationOfUserSucceeds() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+
+        User user = userService.toUser(dto);
 
         when(userRepository.existsById(dto.getUsername())).thenReturn(false);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        String generatedUsername = userService.createUser(dto);
+        String generatedUsername = userService.createUser(dto).getUsername();
 
         assertEquals(dto.getUsername(), generatedUsername);
     }
 
     @Test
+    void creationOfUserFailsNoAccountAdded() {
+        UserDto dto = generateUserDto();
+        dto.setAccount(null);
+        User user = userService.toUser(dto);
+
+        when(userRepository.existsById(dto.getUsername())).thenReturn(false);
+        when(userRepository.existsByEmail(dto.getEmail())).thenReturn(false);
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        assertThrows(BadRequestException.class, () -> userService.createUser(dto));
+    }
+
+    @Test
     void creationOfUserFailesUsernameAlreadyExists() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+        User user = userService.toUser(dto);
 
         when(userRepository.existsById(dto.getUsername())).thenReturn(true);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(false);
 
-        assertThrows(UserAlreadyExistsException.class, () -> {
-            userService.createUser(dto);
-        });
+        assertThrows(AlreadyExistsException.class, () -> userService.createUser(dto));
     }
 
     @Test
     void creationOfUserFailesEmailAlreadyInUse() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+        User user = userService.toUser(dto);
 
         when(userRepository.existsById(dto.getUsername())).thenReturn(false);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(true);
 
-        assertThrows(EmailAlreadyInUseException.class, () -> {
-            userService.createUser(dto);
-        });
+        assertThrows(AlreadyExistsException.class, () -> userService.createUser(dto));
     }
 
     @Test
     void deleteUserFailsBecauseUserDoesNotExists() {
         UserDto dto = generateUserDto();
 
-        assertThrows(RecordNotFoundException.class, () -> {
-            userService.deleteUser(dto.getUsername());
-        });
+        assertThrows(RecordNotFoundException.class, () -> userService.deleteUser(dto.getUsername()));
     }
 
     @Test
     void updateUserFailsBecauseUserDoesNotExists() {
         UserDto dto = generateUserDto();
 
-        assertThrows(RecordNotFoundException.class, () -> {
-            userService.updateUser(dto.getUsername(), dto);
-        });
+        assertThrows(RecordNotFoundException.class, () -> userService.updateUser(dto.getUsername(), dto));
     }
 
     @Test
     void getUserAuthoritiesSucceeds() {
         UserDto userDto = generateUserDto();
-        User user = UserService.toUser(userDto);
+        User user = userService.toUser(userDto);
         userDto.setAuthorities(user.getAuthorities());
 
         when(userRepository.existsById(any(String.class))).thenReturn(true);
@@ -217,24 +241,20 @@ public class UserServiceImplTest {
 
         when(userRepository.existsById(any(String.class))).thenReturn(false);
 
-        assertThrows(RecordNotFoundException.class, () -> {
-            userService.getAuthorities(dto.getUsername());
-        });
+        assertThrows(RecordNotFoundException.class, () -> userService.getAuthorities(dto.getUsername()));
     }
 
     @Test
     void addAuthoritySucceeds() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+        User user = userService.toUser(dto);
         Authority auth = dto.getAuthorities().iterator().next();
         user.addAuthority(auth);
 
         when(userRepository.findById(dto.getUsername())).thenReturn(Optional.of(user));
         when(userRepository.existsById(any(String.class))).thenReturn(true);
 
-        assertDoesNotThrow(() -> {
-            userService.addAuthority(dto.getUsername(), "ROLE_ADMIN");
-        });
+        assertDoesNotThrow(() -> userService.addAuthority(dto.getUsername(), "ROLE_ADMIN"));
     }
 
     @Test
@@ -244,22 +264,20 @@ public class UserServiceImplTest {
 
         when(userRepository.existsById(any(String.class))).thenReturn(false);
 
-        assertThrows(RecordNotFoundException.class, () -> {
-            userService.addAuthority(dto.getUsername(), auth.getAuthority());
-        });
+        assertThrows(RecordNotFoundException.class, () -> userService.addAuthority(dto.getUsername(), auth.getAuthority()));
     }
 
     @Test
     void addAuthorityToUserFailsUserAlreadyHasAuthority() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+        User user = userService.toUser(dto);
         Authority auth = dto.getAuthorities().iterator().next();
         user.addAuthority(auth);
 
         when(userRepository.findById(dto.getUsername())).thenReturn(Optional.of(user));
         when(userRepository.existsById(any(String.class))).thenReturn(true);
 
-        assertThrows(UserAlreadyHasAuthorityException.class, () -> {
+        assertThrows(AlreadyExistsException.class, () -> {
             userService.addAuthority(dto.getUsername(), auth.getAuthority());
         });
     }
@@ -267,7 +285,7 @@ public class UserServiceImplTest {
     @Test
     void removeAuthoritySucceeds() {
         UserDto dto = generateUserDto();
-        User user = UserService.toUser(dto);
+        User user = userService.toUser(dto);
         Authority auth = dto.getAuthorities().iterator().next();
         user.addAuthority(auth);
 

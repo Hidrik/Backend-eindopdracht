@@ -1,7 +1,14 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.persistence.*;
 import java.io.File;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Set;
 
 @Entity
@@ -11,34 +18,31 @@ public class Component {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column()
+    @Column(nullable = false)
     private String description;
 
-    @Column()
+    @Column(nullable = false)
     private String manufacturer;
 
-    @Column()
+    @Column(nullable = false)
     private Integer price;
 
     @Column()
     private Integer stock;
 
-    @Column(name = "article_number")
+    @Column(name = "article_number", nullable = false)
     private String articleNumber;
 
-    @Column(name = "order_link")
+    @Column(name = "order_link", nullable = false)
     private String orderLink;
 
     @Column(name = "file_name")
     private String fileName;
 
     @Column(name = "file_type")
-    private String fileType;
+    private String fileUrl;
 
-    @Column(name = "file_data")
-    @Transient
-    private File fileData;
-
+    @JsonIgnore
     @ManyToMany(targetEntity = Assignment.class)
     @JoinTable(
             name = "used_components",
@@ -46,7 +50,13 @@ public class Component {
             inverseJoinColumns = @JoinColumn(name = "assignment_id"))
     Set<Assignment> assignments;
 
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdOn;
 
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedOn;
 
     public Long getId() {
         return id;
@@ -112,19 +122,43 @@ public class Component {
         this.fileName = fileName;
     }
 
-    public String getFileType() {
-        return fileType;
+    public String getFileUrl() {
+        return fileUrl;
     }
 
-    public void setFileType(String fileType) {
-        this.fileType = fileType;
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
-    public File getFileData() {
-        return fileData;
+    public Set<Assignment> getAssignments() {
+        return assignments;
     }
 
-    public void setFileData(File fileData) {
-        this.fileData = fileData;
+    public void setAssignments(Set<Assignment> assignments) {
+        this.assignments = assignments;
+    }
+
+    public void addAssignment(Assignment ass) {
+        assignments.add(ass);
+    }
+
+    public void deleteAssignment(Assignment ass) {
+        assignments.remove(ass);
+    }
+
+    public Date getCreatedOn() {
+        return createdOn;
+    }
+
+    public void setCreatedOn(Date createdOn) {
+        this.createdOn = createdOn;
+    }
+
+    public Date getUpdatedOn() {
+        return updatedOn;
+    }
+
+    public void setUpdatedOn(Date updatedOn) {
+        this.updatedOn = updatedOn;
     }
 }

@@ -1,6 +1,10 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectSummaryDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Project;
 import org.springframework.stereotype.Service;
 
@@ -10,19 +14,39 @@ import java.util.List;
 @Service
 public interface ProjectService {
 
-    List<ProjectDto> getProjects();
+    List<ProjectDto> getProjectsDto();
 
-    ProjectDto getProject(Long id);
+    ProjectDto getProjectDto(Long id);
 
-    Long getIdFromProjectCode(String code);
+    Project getProjectFromProjectCode(String projectCode);
 
-    Long createProject(ProjectDto dto);
+    ProjectSummaryDto createProject(ProjectDto dto);
+
+    Long updateProject(String projectCode, ProjectDto dto);
+
+    Project saveProject(Project project);
+
+    void deleteProject(String projectCode);
+
+    ProjectDto addAccountToProject(String projectCode, Long accountId);
+
+    void removeAccountFromProject(String projectCode, Long accountId);
+
+    void removeAccountFromProjects(Long accountId);
 
     boolean projectCodeExists(ProjectDto dto);
 
     boolean checkDeadlineNotInPast(LocalDate date);
 
-    ProjectDto fromProject(Project project);
+    Integer calculateCosts(Project project);
+
+    ProjectDto toProjectDto(Project project);
+
+    ProjectSummaryDto toProjectSummaryDto(Project project);
 
     Project toProject(ProjectDto dto);
+
+    Project toProject(ProjectSummaryDto dto);
+
+
 }

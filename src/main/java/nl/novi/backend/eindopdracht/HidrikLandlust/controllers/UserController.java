@@ -2,10 +2,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.UserService;
-import nl.novi.backend.eindopdracht.HidrikLandlust.services.UserServiceImpl;
-import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -25,7 +22,7 @@ public class UserController {
     @GetMapping(value = "")
     public ResponseEntity<List<UserDto>> getUsers() {
 
-        List<UserDto> userDtos = userService.getUsers();
+        List<UserDto> userDtos = userService.getUsersDto();
 
         return ResponseEntity.ok().body(userDtos);
     }
@@ -33,7 +30,7 @@ public class UserController {
     @GetMapping(value = "/{username}")
     public ResponseEntity<UserDto> getUser(@PathVariable("username") String username) {
 
-        UserDto optionalUser = userService.getUser(username);
+        UserDto optionalUser = userService.getUserDto(username);
 
 
         return ResponseEntity.ok().body(optionalUser);
@@ -44,13 +41,15 @@ public class UserController {
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto dto) {
 
 
-        String newUsername = userService.createUser(dto);
-        userService.addAuthority(newUsername, "ROLE_USER");
+        UserDto newUser = userService.createUser(dto);
+        userService.addAuthority(newUser.getUsername(), "ROLE_USER");
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{username}")
-                .buildAndExpand(newUsername).toUri();
+                .buildAndExpand(newUser.getUsername()).toUri();
 
-        return ResponseEntity.created(location).body(dto);
+        newUser.setPassword(userService.maskPassword());
+
+        return ResponseEntity.created(location).body(newUser);
     }
 
     @PutMapping(value = "/{username}")
@@ -79,9 +78,10 @@ public class UserController {
         return ResponseEntity.accepted().build();
     }
 
-    @DeleteMapping(value = "/{username}/authorities/{authority}")
-    public ResponseEntity<Object> deleteUserAuthority(@PathVariable("username") String username, @PathVariable("authority") String authority) {
-        userService.removeAuthority(username, authority);
+    @DeleteMapping(value = "/{username}/authorities")
+    public ResponseEntity<Object> deleteUserAuthority(@PathVariable("username") String username, @RequestBody Map<String, Object> fields) {
+        String authorityName = (String) fields.get("authority");
+        userService.removeAuthority(username, authorityName);
         return ResponseEntity.noContent().build();
     }
 

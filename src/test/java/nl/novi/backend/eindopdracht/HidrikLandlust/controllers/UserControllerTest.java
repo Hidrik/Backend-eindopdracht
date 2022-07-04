@@ -1,10 +1,11 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 import nl.novi.backend.eindopdracht.HidrikLandlust.TestUtils;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.EmailAlreadyInUseException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.AlreadyExistsException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.UserAlreadyExistsException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.User;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.CustomUserDetailsService;
+import nl.novi.backend.eindopdracht.HidrikLandlust.utils.FileStorage;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.UserService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.utils.JwtUtil;
 
@@ -48,13 +49,16 @@ public class UserControllerTest {
     @MockBean
     JwtUtil jwtUtil;
 
+    @MockBean
+    FileStorage fileStorageService;
+
     @Test
     @WithMockUser(roles="ADMIN") //For authorisation
     void getAllUsersAuthorizedTest() throws Exception {
         List<UserDto> users = new ArrayList<>();
         users.add(generateUserDto());
 
-        when(userService.getUsers()).thenReturn(users);
+        when(userService.getUsersDto()).thenReturn(users);
 
         mockMvc
                 .perform(MockMvcRequestBuilders.get("/users"))
@@ -72,7 +76,7 @@ public class UserControllerTest {
         users.add(generateUserDto());
 
 
-        when(userService.getUsers()).thenReturn(users);
+        when(userService.getUsersDto()).thenReturn(users);
 
         mockMvc
                 .perform(MockMvcRequestBuilders.get("/users"))
@@ -84,7 +88,7 @@ public class UserControllerTest {
     @WithMockUser(roles = "ADMIN")
     void getUserAuthorizedTest() throws Exception {
 
-        when(userService.getUser(generateUserDto().getUsername())).thenReturn(generateUserDto());
+        when(userService.getUserDto(generateUserDto().getUsername())).thenReturn(generateUserDto());
 
         mockMvc
                 .perform(MockMvcRequestBuilders.get("/users/testUser"))
@@ -98,7 +102,7 @@ public class UserControllerTest {
     @WithMockUser(roles = "USER")
     void getUserUnauthorizedTest() throws Exception {
 
-        when(userService.getUser(generateUserDto().getUsername())).thenReturn(generateUserDto());
+        when(userService.getUserDto(generateUserDto().getUsername())).thenReturn(generateUserDto());
 
         mockMvc
                 .perform(MockMvcRequestBuilders.get("/users/testUser"))
@@ -110,7 +114,7 @@ public class UserControllerTest {
     @WithMockUser(roles = "ADMIN")
     void makeNewUserAsAdminSucceed() throws Exception {
 
-        when(userService.createUser(Mockito.any(UserDto.class))).thenReturn(generateUserDto().getUsername());
+        when(userService.createUser(Mockito.any(UserDto.class))).thenReturn(generateUserDto());
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -127,7 +131,7 @@ public class UserControllerTest {
     @WithMockUser(roles = "USER")
     void makeNewUserAsUserFailedUnauthorized() throws Exception {
 
-        when(userService.createUser(Mockito.any(UserDto.class))).thenReturn(generateUserDto().getUsername());
+        when(userService.createUser(Mockito.any(UserDto.class))).thenReturn(generateUserDto());
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -157,7 +161,8 @@ public class UserControllerTest {
     @WithMockUser(roles = "ADMIN")
     void makeNewUserWhenNameAlreadyExists() throws Exception {
 
-        when(userService.createUser(Mockito.any(UserDto.class))).thenThrow(new UserAlreadyExistsException(generateUserDto().getUsername()));
+        when(userService.createUser(Mockito.any(UserDto.class))).thenThrow(new AlreadyExistsException(
+                String.format("User %s already exists!", generateUserDto().getUsername())));
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -167,14 +172,16 @@ public class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isConflict())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", is("User testUser already exists.")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$", is(
+                        String.format("User %s already exists!", generateUserDto().getUsername()))));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void makeNewUserWhenEmailAlreadyExists() throws Exception {
 
-        when(userService.createUser(Mockito.any(UserDto.class))).thenThrow(new EmailAlreadyInUseException(generateUserDto().getEmail()));
+        when(userService.createUser(Mockito.any(UserDto.class))).thenThrow(
+                new AlreadyExistsException(String.format("Email %s already exists!", generateUserDto().getEmail())));
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -184,7 +191,8 @@ public class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isConflict())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", is("Email test@user.1 already in use.")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$", is(
+                        String.format("Email %s already exists!", generateUserDto().getEmail()))));
     }
 
     @Test
@@ -284,6 +292,10 @@ public class UserControllerTest {
     @WithMockUser(roles = "ADMIN")
     void addAuthorityToUserAsAdminSucceeds() throws Exception {
 
+        User user = userService.toUser(generateUserDto());
+
+        when(userService.getUser(generateUserDto().getUsername())).thenReturn(user);
+
         mockMvc
                 .perform(MockMvcRequestBuilders
                         .post(String.format("/users/%s/authorities", generateUserDto().getUsername()))
@@ -310,7 +322,35 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void removeAuthorityAsAdmin() throws Exception {
+    void removeAuthorityAsAdminSucceeds() throws Exception {
+
+        class SendAuthorityData {
+            String authority = "ROLE_USER";
+
+            public String getAuthority() {return authority;}
+
+            public void setAuthority(String authority) {
+                this.authority = authority;
+            }
+        }
+
+        User user = userService.toUser(generateUserDto());
+
+        when(userService.getUser(generateUserDto().getUsername())).thenReturn(user);
+
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .delete(String.format("/users/%1$s/authorities", generateUserDto().getUsername()))
+                        .content(TestUtils.asJsonString(new SendAuthorityData()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void removeAuthorityAsAdminUserDoesNotExists() throws Exception {
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -319,7 +359,7 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isNoContent());
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
