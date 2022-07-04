@@ -82,8 +82,14 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public void deleteComponent(Long id) {
-        componentRepository.delete(getComponent(id));
+    public boolean deleteComponent(Long id) {
+        try {
+            componentRepository.delete(getComponent(id));
+            return true;
+        } catch (Exception e) {
+            throw new InternalFailureException("Cant delete component");
+        }
+
     }
 
     @Override
@@ -105,7 +111,7 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public void saveFile(Long id, MultipartFile file) {
+    public boolean saveFile(Long id, MultipartFile file) {
         String fileName = file.getOriginalFilename();
         String url;
         String oldFileName = getComponent(id).getFileName();
@@ -126,6 +132,7 @@ public class ComponentServiceImpl implements ComponentService {
         try {
             if (oldFileName != null) deleteFileInfo(id);
             saveFileInfo(id, fileName, url);
+            return true;
         } catch (Exception ex) {
             //If writing to DB fails -> the component must be deleted.
             fileStorage.delete(fileName, id);
@@ -144,27 +151,32 @@ public class ComponentServiceImpl implements ComponentService {
             } else {
                 throw new InternalFailureException("Cant load file " + fileName);
             }
-
         }
     }
 
     @Override
-    public void deleteFile(Long id) {
+    public boolean deleteFile(Long id) {
         String fileName = deleteFileInfo(id);
         try {
             fileStorage.delete(fileName, id);
+            return true;
         } catch (Exception e) {
             throw new InternalFailureException("File from component with id " + id + " can not be removed or is already removed.");
         }
     }
 
     @Override
-    public void saveFileInfo(Long id, String fileName, String url) {
+    public boolean saveFileInfo(Long id, String fileName, String url) {
         Component component = getComponent(id);
         component.setFileName(fileName);
         component.setFileUrl(url);
 
-        componentRepository.save(component);
+        try {
+            componentRepository.save(component);
+            return true;
+        } catch (Exception e) {
+            throw new InternalFailureException("Cant save component");
+        }
     }
 
     @Override

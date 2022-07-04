@@ -23,7 +23,7 @@ public interface ComponentService {
 
     Component getComponent(Long id);
 
-    void deleteComponent(Long id);
+    boolean deleteComponent(Long id);
 
     Component addComponentToAssignment(Assignment assignment, Long componentId, Integer amount);
 
@@ -31,13 +31,13 @@ public interface ComponentService {
 
     Boolean hasFile(Long id);
 
-    void saveFile(Long id, MultipartFile file);
+    boolean saveFile(Long id, MultipartFile file);
 
     Resource loadFile(Long id);
 
-    void deleteFile(Long id);
+    boolean deleteFile(Long id);
 
-    void saveFileInfo(Long id, String fileName, String url);
+    boolean saveFileInfo(Long id, String fileName, String url);
 
     String deleteFileInfo(Long id);
 

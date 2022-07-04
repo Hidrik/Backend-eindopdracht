@@ -2,6 +2,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.AssignmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -54,15 +55,28 @@ public class AssignmentController {
 
     @PutMapping(value = "/{id}/components/{componentId}")
     public ResponseEntity<Object> addComponent(@PathVariable("id") Long assignmentId, @PathVariable("componentId") Long componentId, @RequestBody Map<String, Object> fields) {
-        Integer amount = (Integer) fields.get("amount");
+        Integer amount;
+        try {
+            amount = (Integer) fields.get("amount");
+        } catch (Exception e) {
+            throw new BadRequestException("No amount is given, request body is faulty.");
+        }
+
         assignmentService.addComponentToAssignment(amount, assignmentId, componentId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping(value = "/{id}/components/{componentId}")
     public ResponseEntity<Object> removeComponent(@PathVariable("id") Long assignmentId, @PathVariable("componentId") Long componentId, @RequestBody Map<String, Object> fields) {
-        Integer amount = (Integer) fields.get("amount");
+        Integer amount;
+        try {
+            amount = (Integer) fields.get("amount");
+        } catch (Exception e) {
+            throw new BadRequestException("No amount is given, request body is faulty.");
+        }
+
         assignmentService.removeComponentFromAssignment(amount, assignmentId, componentId);
+
         return ResponseEntity.accepted().build();
     }
 

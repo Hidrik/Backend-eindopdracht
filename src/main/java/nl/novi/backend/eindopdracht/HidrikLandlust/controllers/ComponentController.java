@@ -11,7 +11,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -21,9 +23,6 @@ public class ComponentController {
     @Autowired
     ComponentService componentService;
 
-    @Autowired
-    FileStorage storageService;
-
     @GetMapping(value = "")
     public ResponseEntity<List<ComponentDto>> getComponents() {
         List<ComponentDto> components = componentService.getComponentsDto();
@@ -31,18 +30,21 @@ public class ComponentController {
         return ResponseEntity.ok().body(components);
     }
 
-    @PostMapping(value = "")
-    public ResponseEntity<ComponentDto> createComponent(@RequestBody ComponentDto dto) {
-        ComponentDto component = componentService.createComponent(dto);
-
-        return ResponseEntity.accepted().body(component);
-    }
-
     @GetMapping(value = "/{id}")
     public ResponseEntity<ComponentDto> getComponent(@PathVariable("id") Long id) {
         ComponentDto component = componentService.getComponentDto(id);
 
-        return ResponseEntity.accepted().body(component);
+        return ResponseEntity.ok().body(component);
+    }
+
+    @PostMapping(value = "")
+    public ResponseEntity<ComponentDto> createComponent(@RequestBody ComponentDto dto) {
+        ComponentDto component = componentService.createComponent(dto);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/components")
+                .buildAndExpand(component.getId()).toUri();
+
+        return ResponseEntity.created(location).body(component);
     }
 
     @PutMapping(value = "/{id}")

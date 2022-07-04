@@ -148,6 +148,8 @@ public class TestUtils {
         dto.setOrderLink("http://test.test.nl/");
 
         Set<AssignmentSummaryDto> assignmentDtos = new HashSet<>();
+        AssignmentSummaryDto assignmentDto = new AssignmentSummaryDto();
+        assignmentDtos.add(assignmentDto);
         dto.setAssignments(assignmentDtos);
 
         return dto;
