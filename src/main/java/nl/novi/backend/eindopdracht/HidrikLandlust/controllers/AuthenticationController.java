@@ -1,5 +1,6 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.payload.AuthenticationRequest;
 import nl.novi.backend.eindopdracht.HidrikLandlust.payload.AuthenticationResponse;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.CustomUserDetailsService;
@@ -47,7 +48,7 @@ public class AuthenticationController {
             );
         }
         catch (BadCredentialsException ex) {
-            throw new Exception("Incorrect username or password", ex);
+            throw new BadRequestException("Incorrect username or password");
         }
 
         final UserDetails userDetails = userDetailsService
