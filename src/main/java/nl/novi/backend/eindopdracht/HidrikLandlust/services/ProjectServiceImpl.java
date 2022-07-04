@@ -104,9 +104,16 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public void removeAccountFromProject(String projectCode, Long accountId) {
         Project project = getProjectFromProjectCode(projectCode);
-        project.removeAccount(accountService.getAccount(accountId));
+        Account account = accountService.getAccount(accountId);
+        if (project.getAccounts().contains(account)) {
+            project.removeAccount(account);
+            projectRepository.save(project);
+        } else {
+            throw new RecordNotFoundException(String.format("Project with code %s does not contain account with id %s", projectCode, accountId));
+        }
 
-        projectRepository.save(project);
+
+
     }
 
     @Override

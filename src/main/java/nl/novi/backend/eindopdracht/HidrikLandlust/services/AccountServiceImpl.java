@@ -26,7 +26,7 @@ public class AccountServiceImpl implements AccountService {
         Optional<Account> optionalAccount = accountRepository.findById(id);
         if (optionalAccount.isPresent()) return optionalAccount.get();
 
-        throw new RecordNotFoundException("Account with id " + id + " does not exist.");
+        throw new RecordNotFoundException(String.format("Account with id %s does not exist.", id));
     }
 
     @Override
@@ -45,7 +45,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<AccountSummaryDto> getAccountSummaryDto() {
+    public List<AccountSummaryDto> getAccountsSummaryDto() {
         List<AccountSummaryDto> dtos = new ArrayList<>();
         List<Account> accounts = getAccounts();
         if (accounts.size() > 0) {

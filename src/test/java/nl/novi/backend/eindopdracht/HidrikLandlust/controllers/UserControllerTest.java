@@ -3,6 +3,7 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.TestUtils;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.AlreadyExistsException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.User;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.CustomUserDetailsService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.utils.FileStorage;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.UserService;
@@ -291,6 +292,10 @@ public class UserControllerTest {
     @WithMockUser(roles = "ADMIN")
     void addAuthorityToUserAsAdminSucceeds() throws Exception {
 
+        User user = userService.toUser(generateUserDto());
+
+        when(userService.getUser(generateUserDto().getUsername())).thenReturn(user);
+
         mockMvc
                 .perform(MockMvcRequestBuilders
                         .post(String.format("/users/%s/authorities", generateUserDto().getUsername()))
@@ -317,7 +322,35 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void removeAuthorityAsAdmin() throws Exception {
+    void removeAuthorityAsAdminSucceeds() throws Exception {
+
+        class SendAuthorityData {
+            String authority = "ROLE_USER";
+
+            public String getAuthority() {return authority;}
+
+            public void setAuthority(String authority) {
+                this.authority = authority;
+            }
+        }
+
+        User user = userService.toUser(generateUserDto());
+
+        when(userService.getUser(generateUserDto().getUsername())).thenReturn(user);
+
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .delete(String.format("/users/%1$s/authorities", generateUserDto().getUsername()))
+                        .content(TestUtils.asJsonString(new SendAuthorityData()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void removeAuthorityAsAdminUserDoesNotExists() throws Exception {
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -326,7 +359,7 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isNoContent());
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test

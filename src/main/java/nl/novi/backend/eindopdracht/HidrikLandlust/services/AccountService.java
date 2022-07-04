@@ -19,7 +19,7 @@ public interface AccountService {
 
     AccountSummaryDto getAccountSummaryDto(Long id);
 
-    List<AccountSummaryDto> getAccountSummaryDto();
+    List<AccountSummaryDto> getAccountsSummaryDto();
 
     AccountSummaryDto updateAccount(Long id, AccountSummaryDto dto);
 

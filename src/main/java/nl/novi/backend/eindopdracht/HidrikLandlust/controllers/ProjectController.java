@@ -62,7 +62,7 @@ public class ProjectController {
         return ResponseEntity.accepted().build();
     }
 
-    @PutMapping(value = "/{projectCode}/assignments/")
+    @PutMapping(value = "/{projectCode}/assignments")
     public ResponseEntity<AssignmentDto> addAssignmentToProject(@PathVariable("projectCode") String projectCode, @RequestBody AssignmentDto dto) {
         AssignmentDto receivedDto = assignmentService.addAssignmentToProject(projectCode, dto);
 
@@ -84,7 +84,7 @@ public class ProjectController {
 
     @DeleteMapping(value = "/{projectCode}/accounts/{accountId}")
     public ResponseEntity<ProjectDto> removeAccountFromProject(@PathVariable("projectCode") String projectCode, @PathVariable("accountId")  Long accountId) {
-        projectService.removeAccountFromProjects(accountId);
+        projectService.removeAccountFromProject(projectCode, accountId);
 
         return ResponseEntity.ok().build();
     }

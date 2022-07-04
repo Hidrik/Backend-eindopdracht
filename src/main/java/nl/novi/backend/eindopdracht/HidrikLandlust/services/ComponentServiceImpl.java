@@ -87,17 +87,19 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public Component addComponentToAssignment(Assignment assignment, Long componentId) {
+    public Component addComponentToAssignment(Assignment assignment, Long componentId, Integer amount) {
         Component component = getComponent(componentId);
+        component.setStock(component.getStock() - amount);
         component.addAssignment(assignment);
         return componentRepository.save(component);
     }
 
     @Override
-    public Component removeComponentFromAssignment(Assignment assignment, Long componentId) {
+    public Component removeComponentFromAssignment(Assignment assignment, Long componentId, Integer amount) {
         Component component = getComponent(componentId);
 
         component.deleteAssignment(assignment);
+        component.setStock(component.getStock() + amount);
 
         return componentRepository.save(component);
     }

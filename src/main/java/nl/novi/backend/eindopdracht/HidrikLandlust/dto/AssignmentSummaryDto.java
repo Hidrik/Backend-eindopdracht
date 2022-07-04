@@ -11,6 +11,7 @@ public class AssignmentSummaryDto {
     private Short hoursWorked;
     private String descriptionFinishedWork;
     private String assignmentCode;
+    private Byte progressPercentage;
 
     public Long getId() {
         return id;
@@ -42,5 +43,13 @@ public class AssignmentSummaryDto {
 
     public void setAssignmentCode(String assignmentCode) {
         this.assignmentCode = assignmentCode;
+    }
+
+    public Byte getProgressPercentage() {
+        return progressPercentage;
+    }
+
+    public void setProgressPercentage(Byte progressPercentage) {
+        this.progressPercentage = progressPercentage;
     }
 }

@@ -25,9 +25,9 @@ public interface ComponentService {
 
     void deleteComponent(Long id);
 
-    Component addComponentToAssignment(Assignment assignment, Long componentId);
+    Component addComponentToAssignment(Assignment assignment, Long componentId, Integer amount);
 
-    Component removeComponentFromAssignment(Assignment assignment, Long componentId);
+    Component removeComponentFromAssignment(Assignment assignment, Long componentId, Integer amount);
 
     Boolean hasFile(Long id);
 

@@ -78,9 +78,10 @@ public class UserController {
         return ResponseEntity.accepted().build();
     }
 
-    @DeleteMapping(value = "/{username}/authorities/{authority}")
-    public ResponseEntity<Object> deleteUserAuthority(@PathVariable("username") String username, @PathVariable("authority") String authority) {
-        userService.removeAuthority(username, authority);
+    @DeleteMapping(value = "/{username}/authorities")
+    public ResponseEntity<Object> deleteUserAuthority(@PathVariable("username") String username, @RequestBody Map<String, Object> fields) {
+        String authorityName = (String) fields.get("authority");
+        userService.removeAuthority(username, authorityName);
         return ResponseEntity.noContent().build();
     }
 

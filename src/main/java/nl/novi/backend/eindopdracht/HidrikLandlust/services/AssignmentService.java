@@ -14,27 +14,27 @@ import java.util.Set;
 @Service
 public interface AssignmentService {
 
-    List<AssignmentDto> getAllAssignments();
+    List<AssignmentDto> getAllAssignmentsDto();
 
     Assignment getAssignment(Long id);
 
     AssignmentDto getAssignmentDto(Long id);
 
-    void updateAssignment(Long id, AssignmentDto dto);
+    AssignmentSummaryDto updateAssignment(Long id, AssignmentDto dto);
 
-    void updateAssignmentFinishedWork(Long id, AssignmentSummaryDto summaryDto);
+    AssignmentSummaryDto updateAssignmentFinishedWork(Long id, AssignmentSummaryDto summaryDto);
 
-    void deleteAssignment(Long id);
+    boolean deleteAssignment(Long id);
 
     AssignmentDto addAssignmentToProject(String projectCode, AssignmentDto dto);
 
     AssignmentDto addComponentToAssignment(Integer amount, Long assignmentId, Long componentId);
 
-    void removeComponentFromAssignment(Integer amount, Long assignmentId, Long componentId);
+    AssignmentDto removeComponentFromAssignment(Integer amount, Long assignmentId, Long componentId);
 
-    void addAccountToAssignment(Long assignmentId, Long accountId);
+    AssignmentDto addAccountToAssignment(Long assignmentId, Long accountId);
 
-    void removeAccountFromAssignment(Long assignmentId, Long accountId);
+    boolean removeAccountFromAssignment(Long assignmentId, Long accountId);
 
     String generateAssignmentCode(String projectCode);
 

@@ -20,7 +20,7 @@ public class AccountController {
     @GetMapping(value = "")
     public ResponseEntity<List<AccountSummaryDto>> getAccounts() {
 
-        List<AccountSummaryDto> dtos = accountService.getAccountSummaryDto();
+        List<AccountSummaryDto> dtos = accountService.getAccountsSummaryDto();
 
         return ResponseEntity.ok().body(dtos);
     }

@@ -9,7 +9,7 @@ VALUES
 
 INSERT INTO component(description, manufacturer, price, article_number, order_link, stock)
 VALUES
-('Dit is component met id 1', 'NOVI', 1000, 'ABC-DEF-GHI-JKL', 'https://www.bestel.nl/', 0);
+('Dit is component met id 1', 'NOVI', 1000, 'ABC-DEF-GHI-JKL', 'https://www.bestel.nl/', 100);
 
 INSERT INTO account
 (employee_function, first_name, last_name, postal_code, street_name, house_number, city)

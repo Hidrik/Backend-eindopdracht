@@ -125,8 +125,13 @@ public class UserServiceImpl implements UserService {
 
     public void removeAuthority(String username, String authority) {
         User user = getUser(username);
-        Authority authorityToRemove = user.getAuthorities().stream().filter((a) -> a.getAuthority().equalsIgnoreCase(authority)).findAny().get();
-        user.removeAuthority(authorityToRemove);
+        try {
+            Authority authorityToRemove = user.getAuthorities().stream().filter((a) -> a.getAuthority().equalsIgnoreCase(authority)).findAny().get();
+            user.removeAuthority(authorityToRemove);
+        } catch (Exception e) {
+            throw new RecordNotFoundException(String.format("User %s does not have authority %s.", username, authority));
+        }
+
         userRepository.save(user);
     }
 
