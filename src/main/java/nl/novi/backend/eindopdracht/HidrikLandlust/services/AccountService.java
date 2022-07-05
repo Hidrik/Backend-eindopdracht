@@ -23,9 +23,9 @@ public interface AccountService {
 
     AccountSummaryDto updateAccount(Long id, AccountSummaryDto dto);
 
-    void deleteAccount(Long id);
+    boolean deleteAccount(Long id);
 
-    void removeAssignmentFromAccount(Assignment assignment, Long accountId);
+    boolean removeAssignmentFromAccount(Assignment assignment, Long accountId);
 
     AccountDto toAccountDto(Account account);
 

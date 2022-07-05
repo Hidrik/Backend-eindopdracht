@@ -8,6 +8,7 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Project;
 import org.checkerframework.checker.units.qual.A;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class TestUtils {
@@ -48,6 +49,32 @@ public class TestUtils {
         return testUser;
     }
 
+    public static Account generateAccount() {
+        Account account = new Account();
+        account.setStreetName("testlaan");
+        account.setLastName("er");
+        account.setFirstName("test");
+        account.setId(1L);
+        account.setEmployeeFunction("Tester");
+        account.setCity("testcity");
+        account.setHouseNumber(2);
+        account.setUpdatedOn(new Date());
+        account.setCreatedOn(new Date(100));
+        account.setPostalCode("test-ER");
+
+        Set<Assignment> assignments = new HashSet<>();
+        Assignment assignment = generateAssignment();
+        assignments.add(assignment);
+        account.setAssignments(assignments);
+
+        Set<Project> projects = new HashSet<>();
+        Project project = generateProject();
+        projects.add(project);
+        account.setProjects(projects);
+
+        return account;
+    }
+
     public static AccountSummaryDto generateAccountSummaryDto() {
         AccountSummaryDto dto = new AccountSummaryDto();
         dto.setEmployeeFunction("Tester");
@@ -69,9 +96,13 @@ public class TestUtils {
         dto.setId(1L);
 
         Set<Project> projects = new HashSet<>();
+        Project project = generateProject();
+        projects.add(project);
         dto.setProjects(projects);
 
         Set<Assignment> assignments = new HashSet<>();
+        Assignment assignment = generateAssignment();
+        assignments.add(assignment);
         dto.setAssignments(assignments);
 
         return dto;
@@ -153,6 +184,23 @@ public class TestUtils {
         dto.setAssignments(assignmentDtos);
 
         return dto;
+    }
+
+    public static Project generateProject() {
+        Project project = new Project();
+        project.setProjectCode("test-test");
+        project.setDescription("test test test test");
+        project.setProgressPercentage((byte) 50);
+        project.setBudget(1000);
+        project.setId(1L);
+        project.setCosts(100);
+        project.setUpdatedOn(new Date());
+        project.setCreatedOn(new Date(100));
+
+        LocalDate deadline = LocalDate.of(2022, 12, 31);
+        project.setDeadline(deadline);
+
+        return project;
     }
 
 }

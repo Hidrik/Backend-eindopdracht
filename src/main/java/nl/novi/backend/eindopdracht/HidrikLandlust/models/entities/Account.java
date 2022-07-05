@@ -143,11 +143,27 @@ public class Account {
         this.projects.remove(project);
     }
 
+    public void setProjects(Set<Project> projects) {
+        this.projects = projects;
+    }
+
     public Set<Assignment> getAssignments() {return this.assignments;}
     public void addAssignment(Assignment assignment) {
         this.assignments.add(assignment);
     }
     public void removeAssignment(Assignment assignment) {
         this.assignments.remove(assignment);
+    }
+
+    public void setAssignments(Set<Assignment> assignments) {
+        this.assignments = assignments;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

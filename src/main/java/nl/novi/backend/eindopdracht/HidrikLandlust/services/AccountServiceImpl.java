@@ -3,6 +3,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.InternalFailureException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
@@ -62,22 +63,38 @@ public class AccountServiceImpl implements AccountService {
         if (dto.getEmployeeFunction() != null) account.setEmployeeFunction(dto.getEmployeeFunction());
         if (dto.getFirstName() != null) account.setFirstName(dto.getFirstName());
         if (dto.getLastName() != null) account.setLastName(dto.getLastName());
+        try {
+            Account savedAccount = accountRepository.save(account);
+            return toAccountSummaryDto(savedAccount);
+        } catch (Exception e) {
+            throw new InternalFailureException(String.format("Can not save account with id %s after updating.", id));
+        }
 
-        Account savedAccount = accountRepository.save(account);
-        return toAccountSummaryDto(savedAccount);
     }
 
     @Override
-    public void deleteAccount(Long id) {
-        Optional<Account> optionalAccount = accountRepository.findById(id);
-        if (optionalAccount.isPresent()) accountRepository.delete(optionalAccount.get());
+    public boolean deleteAccount(Long id) {
+        Account account = getAccount(id);
+        try {
+            accountRepository.delete(account);
+            return true;
+        } catch (Exception e){
+            throw new InternalFailureException(String.format("Can not delete account with id %s", id));
+        }
+
     }
 
     @Override
-    public void removeAssignmentFromAccount(Assignment assignment, Long accountId) {
+    public boolean removeAssignmentFromAccount(Assignment assignment, Long accountId) {
         Account account = getAccount(accountId);
         account.removeAssignment(assignment);
-        accountRepository.save(account);
+
+        try {
+            accountRepository.save(account);
+            return true;
+        } catch (Exception e) {
+            throw new InternalFailureException(String.format("Can not save account after with id %s after removing assignment.", accountId));
+        }
     }
 
     @Override
