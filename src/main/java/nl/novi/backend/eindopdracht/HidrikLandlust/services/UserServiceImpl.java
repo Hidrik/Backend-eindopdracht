@@ -1,8 +1,9 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
-
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.*;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.AlreadyExistsException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
@@ -12,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -46,20 +49,6 @@ public class UserServiceImpl implements UserService {
         return toUserDto(user);
     }
 
-    @Override
-    public User getUser(String username) {
-        if (!userExists(username)) throw new RecordNotFoundException("User " + username + " does not exists.");
-        return userRepository.findById(username).get();
-    }
-
-    public boolean userExists(String username) {
-        return userRepository.existsById(username);
-    }
-
-    public boolean emailExists(String email) {
-        return userRepository.existsByEmail(email);
-    }
-
     public UserDto createUser(UserDto userDto) {
 
         String username = userDto.getUsername();
@@ -72,6 +61,22 @@ public class UserServiceImpl implements UserService {
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         User newUser = userRepository.save(toUser(userDto));
         return toUserDto(newUser);
+    }
+
+    public User toUser(UserDto userDto){
+
+        var user = new User();
+
+        user.setUsername(userDto.getUsername());
+        user.setPassword(userDto.getPassword());
+        user.setEnabled(userDto.getEnabled());
+        user.setEmail(userDto.getEmail());
+
+        if (userDto.getAccount() == null) return user;
+
+        user.setAccount(accountService.toAccount(userDto.getAccount()));
+
+        return user;
     }
 
     public void deleteUser(String username) {
@@ -108,46 +113,14 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    public boolean emailExists(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
     public Set<Authority> getAuthorities(String username) {
         User user = getUser(username);
         UserDto userDto = toUserDto(user);
         return userDto.getAuthorities();
-    }
-
-    public void addAuthority(String username, String authority) {
-        User user = getUser(username);
-        Authority addAuthority = new Authority(username, authority);
-
-        if (authorityAlreadyExists(user, addAuthority)) throw new AlreadyExistsException(String.format("User %s already has authority %s", username, authority));
-        user.addAuthority(addAuthority);
-        userRepository.save(user);
-    }
-
-    public void removeAuthority(String username, String authority) {
-        User user = getUser(username);
-        try {
-            Authority authorityToRemove = user.getAuthorities().stream().filter((a) -> a.getAuthority().equalsIgnoreCase(authority)).findAny().get();
-            user.removeAuthority(authorityToRemove);
-        } catch (Exception e) {
-            throw new RecordNotFoundException(String.format("User %s does not have authority %s.", username, authority));
-        }
-
-        userRepository.save(user);
-    }
-
-    public boolean authorityAlreadyExists(User user, Authority addedAuthority) {
-        boolean returnValue = false;
-        for (Authority currentAuthority : user.getAuthorities()) {
-            if (currentAuthority.getAuthority().equals(addedAuthority.getAuthority())) {
-                returnValue = true;
-                break;
-            }
-        }
-        return returnValue;
-    }
-
-    public String maskPassword() {
-        return "**********";
     }
 
     public UserDto toUserDto(User user){
@@ -164,20 +137,50 @@ public class UserServiceImpl implements UserService {
         return dto;
     }
 
-    public User toUser(UserDto userDto){
+    public void addAuthority(String username, String authority) {
+        User user = getUser(username);
+        Authority addAuthority = new Authority(username, authority);
 
-        var user = new User();
+        if (authorityAlreadyExists(user, addAuthority)) throw new AlreadyExistsException(String.format("User %s already has authority %s", username, authority));
+        user.addAuthority(addAuthority);
+        userRepository.save(user);
+    }
 
-        user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
-        user.setEnabled(userDto.getEnabled());
-        user.setEmail(userDto.getEmail());
+    public boolean authorityAlreadyExists(User user, Authority addedAuthority) {
+        boolean returnValue = false;
+        for (Authority currentAuthority : user.getAuthorities()) {
+            if (currentAuthority.getAuthority().equals(addedAuthority.getAuthority())) {
+                returnValue = true;
+                break;
+            }
+        }
+        return returnValue;
+    }
 
-        if (userDto.getAccount() == null) return user;
+    public void removeAuthority(String username, String authority) {
+        User user = getUser(username);
+        try {
+            Authority authorityToRemove = user.getAuthorities().stream().filter((a) -> a.getAuthority().equalsIgnoreCase(authority)).findAny().get();
+            user.removeAuthority(authorityToRemove);
+        } catch (Exception e) {
+            throw new RecordNotFoundException(String.format("User %s does not have authority %s.", username, authority));
+        }
 
-        user.setAccount(accountService.toAccount(userDto.getAccount()));
+        userRepository.save(user);
+    }
 
-        return user;
+    @Override
+    public User getUser(String username) {
+        if (!userExists(username)) throw new RecordNotFoundException("User " + username + " does not exists.");
+        return userRepository.findById(username).get();
+    }
+
+    public boolean userExists(String username) {
+        return userRepository.existsById(username);
+    }
+
+    public String maskPassword() {
+        return "**********";
     }
 
 }

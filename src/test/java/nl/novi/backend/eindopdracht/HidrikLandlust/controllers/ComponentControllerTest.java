@@ -7,7 +7,6 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.services.ComponentService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.CustomUserDetailsService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.utils.FileStorage;
 import nl.novi.backend.eindopdracht.HidrikLandlust.utils.JwtUtil;
-import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,20 +20,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.sql.DataSource;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import static nl.novi.backend.eindopdracht.HidrikLandlust.TestUtils.generateComponentDto;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(ComponentController.class)
@@ -346,7 +342,7 @@ public class ComponentControllerTest {
     void deleteComponentAsAdminSucceeds() throws Exception {
         ComponentDto dto = generateComponentDto();
 
-        when(componentService.deleteComponent(any(Long.class))).thenReturn(true);
+        doNothing().when(componentService).deleteComponent(any(Long.class));
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -360,7 +356,7 @@ public class ComponentControllerTest {
     void deleteComponentAsUserSucceeds() throws Exception {
         ComponentDto dto = generateComponentDto();
 
-        when(componentService.deleteComponent(any(Long.class))).thenReturn(true);
+        doNothing().when(componentService).deleteComponent(any(Long.class));
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -389,7 +385,7 @@ public class ComponentControllerTest {
         ComponentDto dto = generateComponentDto();
         String exceptionMessage = "exception";
 
-        when(componentService.deleteComponent(any(Long.class))).thenThrow(new RecordNotFoundException(exceptionMessage));
+        doThrow(new RecordNotFoundException(exceptionMessage)).when(componentService).deleteComponent(any(Long.class));
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -452,7 +448,7 @@ public class ComponentControllerTest {
         MockMultipartFile file =
                 new MockMultipartFile("data", "filename.txt", "text/plain", "some xml".getBytes());
 
-        when(componentService.saveFile(any(Long.class), any(MultipartFile.class))).thenReturn(true);
+        doNothing().when(componentService).saveFile(any(Long.class), any(MultipartFile.class));
 
         mockMvc.perform(MockMvcRequestBuilders
                         .multipart(String.format("/components/%s/file", dto.getId()))
@@ -471,7 +467,7 @@ public class ComponentControllerTest {
         MockMultipartFile file =
                 new MockMultipartFile("data", "filename.txt", "text/plain", "some xml".getBytes());
 
-        when(componentService.saveFile(any(Long.class), any(MultipartFile.class))).thenReturn(true);
+        doNothing().when(componentService).saveFile(any(Long.class), any(MultipartFile.class));
 
         mockMvc.perform(MockMvcRequestBuilders
                         .multipart(String.format("/components/%s/file", dto.getId()))
@@ -501,8 +497,6 @@ public class ComponentControllerTest {
     @WithMockUser(roles = admin)
     void saveComponentFileAsAdminFailsNoFileAttached() throws Exception {
         ComponentDto dto = generateComponentDto();
-        MockMultipartFile file =
-                new MockMultipartFile("data", "filename.txt", "text/plain", "some xml".getBytes());
 
         mockMvc.perform(MockMvcRequestBuilders
                         .multipart(String.format("/components/%s/file", dto.getId())))
@@ -530,7 +524,7 @@ public class ComponentControllerTest {
     }
 
     // I have NO IDEA how to test the put-request for updating component files.
-    // This is because is use MockMvcRequestBuilders.multipart. I dont know how to set this request as post or put.
+    // This is because is use MockMvcRequestBuilders.multipart. I don't know how to set this request as post or put.
 
 
     @Test
@@ -577,7 +571,8 @@ public class ComponentControllerTest {
         ComponentDto dto = generateComponentDto();
         String exceptionMessage = "test";
 
-        when(componentService.deleteFile(dto.getId())).thenThrow(new RecordNotFoundException(exceptionMessage));
+
+        doThrow(new RecordNotFoundException(exceptionMessage)).when(componentService).deleteFile(dto.getId());
 
         mockMvc
                 .perform(MockMvcRequestBuilders.delete(String.format("/components/%s/file", dto.getId())))

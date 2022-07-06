@@ -2,11 +2,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.*;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Project;
-import org.checkerframework.checker.units.qual.A;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.*;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -25,8 +21,6 @@ public class TestUtils {
     public static UserDto generateUserDto() {
         UserDto testUser = new UserDto();
         Set<Authority> authorities = new HashSet<>();
-
-
 
         testUser.setUsername("testUser");
         testUser.setEmail("test@user.1");
@@ -75,15 +69,6 @@ public class TestUtils {
         return account;
     }
 
-    public static AccountSummaryDto generateAccountSummaryDto() {
-        AccountSummaryDto dto = new AccountSummaryDto();
-        dto.setEmployeeFunction("Tester");
-        dto.setLastName("er");
-        dto.setFirstName("test");
-        dto.setId(1L);
-        return dto;
-    }
-
     public static AccountDto generateAccountDto() {
         AccountDto dto = new AccountDto();
         dto.setStreetName("testlaan");
@@ -108,28 +93,21 @@ public class TestUtils {
         return dto;
     }
 
-    public static Assignment generateAssignment() {
-        Assignment assignment = new Assignment();
-
-        assignment.setAssignmentCode("test-test-er");
-        assignment.setDescription("Test test test");
-        assignment.setBudget(10000);
-        assignment.setDescriptionFinishedWork("Test test test test test");
-        assignment.setProgressPercentage((byte) 100);
-        assignment.setHoursWorked((short) 100);
-        assignment.setId(1L);
-        assignment.setCosts(0);
-
-        Map<Long, Integer> amountOfComponentsById = new HashMap<>();
-        assignment.setAmountOfComponentById(amountOfComponentsById);
-
+    public static Project generateProject() {
         Project project = new Project();
-        assignment.setProject(project);
+        project.setProjectCode("test-test");
+        project.setDescription("test test test test");
+        project.setProgressPercentage((byte) 50);
+        project.setBudget(1000);
+        project.setId(1L);
+        project.setCosts(100);
+        project.setUpdatedOn(new Date());
+        project.setCreatedOn(new Date(100));
 
-        Account account = new Account();
-        assignment.setAccount(account);
+        LocalDate deadline = LocalDate.of(2022, 12, 31);
+        project.setDeadline(deadline);
 
-        return assignment;
+        return project;
     }
 
     public static AssignmentSummaryDto generateAssignmentSummaryDto() {
@@ -168,6 +146,60 @@ public class TestUtils {
         return dto;
     }
 
+    public static AccountSummaryDto generateAccountSummaryDto() {
+        AccountSummaryDto dto = new AccountSummaryDto();
+        dto.setEmployeeFunction("Tester");
+        dto.setLastName("er");
+        dto.setFirstName("test");
+        dto.setId(1L);
+        return dto;
+    }
+
+    public static Component generateComponent() {
+        Component component = new Component();
+
+        component.setDescription("test test test");
+        component.setId(1L);
+        component.setPrice(1000);
+        component.setStock(100);
+        component.setArticleNumber("test-test-test");
+        component.setFileName("test.test");
+        component.setFileUrl("/test/test");
+        component.setManufacturer("test company");
+        component.setOrderLink("http://test.test.nl/");
+
+        Set<Assignment> assignments = new HashSet<>();
+        Assignment assignment = generateAssignment();
+        assignments.add(assignment);
+        component.setAssignments(assignments);
+
+        return component;
+    }
+
+    public static Assignment generateAssignment() {
+        Assignment assignment = new Assignment();
+
+        assignment.setAssignmentCode("test-test-er");
+        assignment.setDescription("Test test test");
+        assignment.setBudget(10000);
+        assignment.setDescriptionFinishedWork("Test test test test test");
+        assignment.setProgressPercentage((byte) 100);
+        assignment.setHoursWorked((short) 100);
+        assignment.setId(1L);
+        assignment.setCosts(0);
+
+        Map<Long, Integer> amountOfComponentsById = new HashMap<>();
+        assignment.setAmountOfComponentById(amountOfComponentsById);
+
+        Project project = new Project();
+        assignment.setProject(project);
+
+        Account account = new Account();
+        assignment.setAccount(account);
+
+        return assignment;
+    }
+
     public static ComponentDto generateComponentDto() {
         ComponentDto dto = new ComponentDto();
         dto.setDescription("test test test");
@@ -186,23 +218,6 @@ public class TestUtils {
         dto.setAssignments(assignmentDtos);
 
         return dto;
-    }
-
-    public static Project generateProject() {
-        Project project = new Project();
-        project.setProjectCode("test-test");
-        project.setDescription("test test test test");
-        project.setProgressPercentage((byte) 50);
-        project.setBudget(1000);
-        project.setId(1L);
-        project.setCosts(100);
-        project.setUpdatedOn(new Date());
-        project.setCreatedOn(new Date(100));
-
-        LocalDate deadline = LocalDate.of(2022, 12, 31);
-        project.setDeadline(deadline);
-
-        return project;
     }
 
 }

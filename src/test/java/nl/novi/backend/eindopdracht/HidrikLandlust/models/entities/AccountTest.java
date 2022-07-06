@@ -39,16 +39,16 @@ public class AccountTest {
     @Test
     void accountProjectGettersAndAddersAndRemoverOk() {
         Account account = new Account();
-        Project proj = new Project();
-        Set<Project> projs = new HashSet<>();
+        Project project = new Project();
+        Set<Project> projects = new HashSet<>();
         Set<Project> emptySet = new HashSet<>();
 
-        projs.add(proj);
-        account.addProject(proj);
+        projects.add(project);
+        account.addProject(project);
 
-        assertEquals(account.getProjects(), projs);
+        assertEquals(account.getProjects(), projects);
 
-        account.removeProject(proj);
+        account.removeProject(project);
 
         assertEquals(account.getProjects(), emptySet);
     }

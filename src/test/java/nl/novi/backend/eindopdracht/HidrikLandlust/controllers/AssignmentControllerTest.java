@@ -1,10 +1,8 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.TestUtils;
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
@@ -13,7 +11,6 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.services.CustomUserDetailsSer
 import nl.novi.backend.eindopdracht.HidrikLandlust.utils.FileStorage;
 import nl.novi.backend.eindopdracht.HidrikLandlust.utils.JwtUtil;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -31,6 +28,7 @@ import java.util.List;
 import static nl.novi.backend.eindopdracht.HidrikLandlust.TestUtils.*;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 
@@ -38,7 +36,7 @@ import static org.mockito.Mockito.when;
 @WebMvcTest(AssignmentController.class)
 public class AssignmentControllerTest {
 
-    private class Amount {
+    private static class Amount {
         private Integer amount = 10;
 
         public Integer getAmount() {
@@ -289,7 +287,6 @@ public class AssignmentControllerTest {
     void updateAssignmentAsAdminSucceeds() throws Exception {
         AssignmentDto dto = generateAssignmentDto();
         AssignmentSummaryDto summaryDto = generateAssignmentSummaryDto();
-        Assignment ass = generateAssignment();
 
         when(assignmentService.updateAssignment(dto.getId(), dto)).thenReturn(summaryDto);
 
@@ -309,7 +306,6 @@ public class AssignmentControllerTest {
     void updateAssignmentAsUserSucceeds() throws Exception {
         AssignmentDto dto = generateAssignmentDto();
         AssignmentSummaryDto summaryDto = generateAssignmentSummaryDto();
-        Assignment ass = generateAssignment();
 
         when(assignmentService.updateAssignment(dto.getId(), dto)).thenReturn(summaryDto);
 
@@ -411,7 +407,8 @@ public class AssignmentControllerTest {
     void deleteAssignmentAsAdminFailsAssignmentNotFound() throws Exception {
         String exceptionMessage = "test";
 
-        when(assignmentService.deleteAssignment(any(Long.class))).thenThrow(new RecordNotFoundException(exceptionMessage));
+        doThrow(new RecordNotFoundException(exceptionMessage)).when(assignmentService).deleteAssignment(any(Long.class));
+
 
         mockMvc
                 .perform(
@@ -553,8 +550,7 @@ public class AssignmentControllerTest {
         Long accountId = generateAccountSummaryDto().getId();
         String exceptionMessage = "test";
 
-        when(assignmentService.removeAccountFromAssignment(any(Long.class), any(Long.class)))
-                .thenThrow(new RecordNotFoundException(exceptionMessage));
+        doThrow(new RecordNotFoundException(exceptionMessage)).when(assignmentService).removeAccountFromAssignment(any(Long.class),any(Long.class));
 
         mockMvc
                 .perform(

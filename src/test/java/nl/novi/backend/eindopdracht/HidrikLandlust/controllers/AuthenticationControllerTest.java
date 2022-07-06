@@ -1,19 +1,11 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
-import nl.novi.backend.eindopdracht.HidrikLandlust.TestUtils;
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
-import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
 import nl.novi.backend.eindopdracht.HidrikLandlust.payload.AuthenticationRequest;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.CustomUserDetailsService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.utils.FileStorage;
 import nl.novi.backend.eindopdracht.HidrikLandlust.utils.JwtUtil;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -24,7 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -33,38 +24,15 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static nl.novi.backend.eindopdracht.HidrikLandlust.TestUtils.asJsonString;
-import static nl.novi.backend.eindopdracht.HidrikLandlust.TestUtils.generateAssignmentDto;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @WebMvcTest(AuthenticationController.class)
 public class AuthenticationControllerTest {
-
-    private class TestUser {
-        private String username = "testuser";
-        private String password = "password";
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-    }
 
     @Autowired
     MockMvc mockMvc;
@@ -121,10 +89,6 @@ public class AuthenticationControllerTest {
         AuthenticationRequest authRequest = new AuthenticationRequest();
         authRequest.setUsername("tester");
         authRequest.setPassword("password");
-
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new BadCredentialsException(exceptionMessage));
 

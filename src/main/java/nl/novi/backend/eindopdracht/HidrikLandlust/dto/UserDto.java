@@ -1,18 +1,17 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
 
 import java.util.Set;
 
 public class UserDto {
 
-    public String username;
-    public String password;
-    public Boolean enabled = true;
-    public String email;
-    public AccountSummaryDto account;
+    private String username;
+    private String password;
+    private Boolean enabled = true;
+    private String email;
+    private AccountSummaryDto account;
 
     @JsonSerialize
     public Set<Authority> authorities;

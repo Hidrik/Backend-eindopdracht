@@ -22,15 +22,24 @@ public class ComponentServiceImpl implements ComponentService {
     @Autowired
     ComponentRepository componentRepository;
 
-    FileStorage fileStorage = new FileStorageImpl();
+    private final FileStorage fileStorage = new FileStorageImpl();
 
     //Not autowired because of infinite recursion
-    AssignmentService assignmentService = new AssignmentServiceImpl();
+    private final AssignmentService assignmentService = new AssignmentServiceImpl();
 
     @Override
     public List<ComponentDto> getComponentsDto() {
         List<Component> components = componentRepository.findAll();
         return toComponentDtos(components);
+    }
+
+    @Override
+    public List<ComponentDto> toComponentDtos(List<Component> components) {
+        List<ComponentDto> dtos = new ArrayList<>();
+        for (Component comp: components) {
+            dtos.add(toComponentDto(comp));
+        }
+        return dtos;
     }
 
     @Override
@@ -46,8 +55,32 @@ public class ComponentServiceImpl implements ComponentService {
         if (dto.getPrice() == null) dto.setPrice(0);
 
         Component component = toComponent(dto);
-        Component savedComponent = componentRepository.save(component);
+        Component savedComponent = saveComponent(component);
         return toComponentDto(savedComponent);
+    }
+
+    @Override
+    public Component toComponent(ComponentDto dto) {
+        Component comp = new Component();
+
+        comp.setFileUrl(dto.getFileUrl());
+        comp.setFileName(dto.getFileName());
+
+        comp.setOrderLink(dto.getOrderLink());
+        comp.setArticleNumber(dto.getArticleNumber());
+        comp.setPrice(dto.getPrice());
+        comp.setId(dto.getId());
+        comp.setStock(dto.getStock());
+        comp.setManufacturer(dto.getManufacturer());
+        comp.setDescription(dto.getDescription());
+
+        if (dto.getAssignments() == null) return comp;
+
+        for (AssignmentSummaryDto ass : dto.getAssignments()) {
+
+            comp.addAssignment(assignmentService.toAssignment(ass));
+        }
+        return comp;
     }
 
     @Override
@@ -56,7 +89,6 @@ public class ComponentServiceImpl implements ComponentService {
 
         if (dto.getFileUrl() != null)        comp.setFileUrl(dto.getFileUrl());
         if (dto.getFileName() != null)       comp.setFileName(dto.getFileName());
-
         if (dto.getOrderLink() != null)      comp.setOrderLink(dto.getOrderLink());
         if (dto.getArticleNumber() != null)  comp.setArticleNumber(dto.getArticleNumber());
         if (dto.getPrice() != null)          comp.setPrice(dto.getPrice());
@@ -65,27 +97,43 @@ public class ComponentServiceImpl implements ComponentService {
         if (dto.getManufacturer() != null)   comp.setManufacturer(dto.getManufacturer());
         if (dto.getDescription() != null)    comp.setDescription(dto.getDescription());
 
-        Component savedComponent = componentRepository.save(comp);
+        Component savedComponent = saveComponent(comp);
 
         return toComponentDto(savedComponent);
     }
 
     @Override
-    public Component getComponent(Long id) {
-        Optional<Component> optionalComponent = componentRepository.findById(id);
+    public ComponentDto toComponentDto(Component comp) {
 
-        if (optionalComponent.isPresent()) {
-            return optionalComponent.get();
-        } else {
-            throw new RecordNotFoundException("Cant find component with id " + id);
+        ComponentDto dto = new ComponentDto();
+
+        dto.setFileUrl(comp.getFileUrl());
+        dto.setFileName(comp.getFileName());
+
+        dto.setOrderLink(comp.getOrderLink());
+        dto.setArticleNumber(comp.getArticleNumber());
+        dto.setPrice(comp.getPrice());
+        dto.setId(comp.getId());
+        dto.setStock(comp.getStock());
+        dto.setManufacturer(comp.getManufacturer());
+        dto.setDescription(comp.getDescription());
+
+        Set<AssignmentSummaryDto> assignmentSummaryDtos = new HashSet<>();
+
+        if (comp.getAssignments() == null) return dto;
+
+        for (Assignment ass : comp.getAssignments()) {
+            assignmentSummaryDtos.add(assignmentService.toAssignmentSummaryDto(ass));
         }
+        dto.setAssignments(assignmentSummaryDtos);
+
+        return dto;
     }
 
     @Override
-    public boolean deleteComponent(Long id) {
+    public void deleteComponent(Long id) {
         try {
             componentRepository.delete(getComponent(id));
-            return true;
         } catch (Exception e) {
             throw new InternalFailureException("Cant delete component");
         }
@@ -97,7 +145,7 @@ public class ComponentServiceImpl implements ComponentService {
         Component component = getComponent(componentId);
         component.setStock(component.getStock() - amount);
         component.addAssignment(assignment);
-        return componentRepository.save(component);
+        return saveComponent(component);
     }
 
     @Override
@@ -106,12 +154,11 @@ public class ComponentServiceImpl implements ComponentService {
 
         component.deleteAssignment(assignment);
         component.setStock(component.getStock() + amount);
-
-        return componentRepository.save(component);
+        return saveComponent(component);
     }
 
     @Override
-    public boolean saveFile(Long id, MultipartFile file) {
+    public void saveFile(Long id, MultipartFile file) {
         String fileName = file.getOriginalFilename();
         String url;
         String oldFileName = getComponent(id).getFileName();
@@ -132,12 +179,19 @@ public class ComponentServiceImpl implements ComponentService {
         try {
             if (oldFileName != null) deleteFileInfo(id);
             saveFileInfo(id, fileName, url);
-            return true;
         } catch (Exception ex) {
             //If writing to DB fails -> the component must be deleted.
             fileStorage.delete(fileName, id);
             throw new InternalError("Uploading file failed");
         }
+    }
+
+    @Override
+    public void saveFileInfo(Long id, String fileName, String url) {
+        Component component = getComponent(id);
+        component.setFileName(fileName);
+        component.setFileUrl(url);
+        saveComponent(component);
     }
 
     @Override
@@ -155,27 +209,12 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public boolean deleteFile(Long id) {
+    public void deleteFile(Long id) {
         String fileName = deleteFileInfo(id);
         try {
             fileStorage.delete(fileName, id);
-            return true;
         } catch (Exception e) {
             throw new InternalFailureException("File from component with id " + id + " can not be removed or is already removed.");
-        }
-    }
-
-    @Override
-    public boolean saveFileInfo(Long id, String fileName, String url) {
-        Component component = getComponent(id);
-        component.setFileName(fileName);
-        component.setFileUrl(url);
-
-        try {
-            componentRepository.save(component);
-            return true;
-        } catch (Exception e) {
-            throw new InternalFailureException("Cant save component");
         }
     }
 
@@ -185,9 +224,17 @@ public class ComponentServiceImpl implements ComponentService {
         String fileName = component.getFileName();
         component.setFileName(null);
         component.setFileUrl(null);
-        componentRepository.save(component);
-
+        saveComponent(component);
         return fileName;
+    }
+
+    @Override
+    public Component saveComponent(Component component) {
+        try {
+            return componentRepository.save(component);
+        } catch (Exception e) {
+            throw new InternalFailureException("Can not save component to database.");
+        }
     }
 
     @Override
@@ -197,28 +244,14 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public Component toComponent(ComponentDto dto) {
-        Component comp = new Component();
+    public Component getComponent(Long id) {
+        Optional<Component> optionalComponent = componentRepository.findById(id);
 
-        comp.setFileUrl(dto.getFileUrl());
-        comp.setFileName(dto.getFileName());
-
-        comp.setOrderLink(dto.getOrderLink());
-        comp.setArticleNumber(dto.getArticleNumber());
-        comp.setPrice(dto.getPrice());
-        comp.setId(dto.getId());
-        comp.setStock(dto.getStock());
-        comp.setManufacturer(dto.getManufacturer());
-        comp.setDescription(dto.getDescription());
-
-        if (dto.getAssignments() == null) return comp;
-
-
-        for (AssignmentSummaryDto ass : dto.getAssignments()) {
-
-            comp.addAssignment(assignmentService.toAssignment(ass));
+        if (optionalComponent.isPresent()) {
+            return optionalComponent.get();
+        } else {
+            throw new RecordNotFoundException("Cant find component with id " + id);
         }
-        return comp;
     }
 
     @Override
@@ -234,41 +267,4 @@ public class ComponentServiceImpl implements ComponentService {
         return dto;
     }
 
-    @Override
-    public ComponentDto toComponentDto(Component comp) {
-
-        ComponentDto dto = new ComponentDto();
-
-        dto.setFileUrl(comp.getFileUrl());
-        dto.setFileName(comp.getFileName());
-
-        dto.setOrderLink(comp.getOrderLink());
-        dto.setArticleNumber(comp.getArticleNumber());
-        dto.setPrice(comp.getPrice());
-        dto.setId(comp.getId());
-        dto.setStock(comp.getStock());
-        dto.setManufacturer(comp.getManufacturer());
-        dto.setDescription(comp.getDescription());
-
-
-        Set<AssignmentSummaryDto> assignmentSummaryDtos = new HashSet<>();
-
-        if (comp.getAssignments() == null) return dto;
-
-        for (Assignment ass : comp.getAssignments()) {
-            assignmentSummaryDtos.add(assignmentService.toAssignmentSummaryDto(ass));
-        }
-        dto.setAssignments(assignmentSummaryDtos);
-
-        return dto;
-    }
-
-    @Override
-    public List<ComponentDto> toComponentDtos(List<Component> components) {
-        List<ComponentDto> dtos = new ArrayList<>();
-        for (Component comp: components) {
-            dtos.add(toComponentDto(comp));
-        }
-        return dtos;
-    }
 }

@@ -47,15 +47,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
-/*    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth
-                .jdbcAuthentication()
-                .passwordEncoder(passwordEncoder())
-                .usersByUsernameQuery("select username, password from users where username=?")
-                .authoritiesByUsernameQuery("select username, authority from authorities where username=?");
-    }*/
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 

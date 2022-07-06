@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.AbstractJobData;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Entity
 public class Assignment extends AbstractJobData {
@@ -16,7 +19,7 @@ public class Assignment extends AbstractJobData {
     @Column(name = "hours_worked")
     private Short hoursWorked;
 
-    @Column(name = "description_finished_work")
+    @Column(name = "description_finished_work", columnDefinition = "TEXT")
     private String descriptionFinishedWork;
 
     @Column(name = "assignment_code")
@@ -24,7 +27,7 @@ public class Assignment extends AbstractJobData {
 
     @JsonIgnore
     @ManyToMany(mappedBy = "assignments")
-    private Set<Component> components = new HashSet<>();
+    private final Set<Component> components = new HashSet<>();
 
     @ElementCollection
     private Map<Long, Integer> amountOfComponentById = new HashMap<>();
@@ -110,7 +113,7 @@ public class Assignment extends AbstractJobData {
     @Override
     public Integer getCosts() {
         int cost = 0;
-        if (components == null) return 0;
+        if (components.size() == 0) return 0;
 
         for (Component comp : components) {
             Integer amountOfCurrentComponent = amountOfComponentById.get(comp.getId());

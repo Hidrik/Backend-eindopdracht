@@ -4,7 +4,6 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.AlreadyExistsException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.ComponentService;
-import nl.novi.backend.eindopdracht.HidrikLandlust.utils.FileStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;

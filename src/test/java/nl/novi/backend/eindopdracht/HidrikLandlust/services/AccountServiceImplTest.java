@@ -204,7 +204,7 @@ public class AccountServiceImplTest {
 
         when(accountRepository.findById(any(Long.class))).thenReturn(optionalAccount);
 
-        assertTrue(accountService.deleteAccount(account.getId()));
+        assertDoesNotThrow(() -> accountService.deleteAccount(account.getId()));
     }
 
     @Test
@@ -227,7 +227,7 @@ public class AccountServiceImplTest {
         when(accountRepository.findById(any(Long.class))).thenReturn(optionalAccount);
         when(accountRepository.save(any(Account.class))).thenReturn(account);
 
-        assertTrue(accountService.removeAssignmentFromAccount(assignment, account.getId()));
+        assertDoesNotThrow(() -> accountService.removeAssignmentFromAccount(assignment, account.getId()));
     }
 
     @Test

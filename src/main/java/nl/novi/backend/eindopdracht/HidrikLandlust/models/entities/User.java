@@ -30,7 +30,7 @@ public class User {
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER)
-    private Set<Authority> authorities = new HashSet<>();
+    private final Set<Authority> authorities = new HashSet<>();
 
     @OneToOne(
             targetEntity = Account.class,

@@ -2,14 +2,10 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Component;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Project;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 public interface AssignmentService {
@@ -24,7 +20,9 @@ public interface AssignmentService {
 
     AssignmentSummaryDto updateAssignmentFinishedWork(Long id, AssignmentSummaryDto summaryDto);
 
-    boolean deleteAssignment(Long id);
+    Assignment saveAssignment(Assignment assignment);
+
+    void deleteAssignment(Long id);
 
     AssignmentDto addAssignmentToProject(String projectCode, AssignmentDto dto);
 
@@ -34,11 +32,11 @@ public interface AssignmentService {
 
     AssignmentDto addAccountToAssignment(Long assignmentId, Long accountId);
 
-    boolean removeAccountFromAssignment(Long assignmentId, Long accountId);
+    void removeAccountFromAssignment(Long assignmentId, Long accountId);
 
     String generateAssignmentCode(String projectCode);
 
-    String generateFinishedWorkDescription(Assignment assignment, String description);
+    String generateFinishedWorkDescription(String oldDescription, String descriptionToAdd);
 
     boolean assignmentCodeExists(String assignmentCode);
 

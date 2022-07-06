@@ -3,7 +3,9 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectSummaryDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.services.*;
+import nl.novi.backend.eindopdracht.HidrikLandlust.services.AssignmentService;
+import nl.novi.backend.eindopdracht.HidrikLandlust.services.ProjectService;
+import nl.novi.backend.eindopdracht.HidrikLandlust.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -53,7 +55,10 @@ public class ProjectController {
     public ResponseEntity<ProjectDto> changeProject(@PathVariable("projectCode") String projectCode, @RequestBody ProjectDto dto) {
         Long id = projectService.updateProject(projectCode, dto);
 
-        return ResponseEntity.accepted().build();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/assignments/{projectCode}")
+                .buildAndExpand(id).toUri();
+
+        return ResponseEntity.created(location).build();
     }
 
     @DeleteMapping(value = "/{projectCode}")

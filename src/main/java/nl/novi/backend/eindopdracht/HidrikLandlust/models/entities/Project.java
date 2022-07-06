@@ -24,7 +24,7 @@ public class Project extends AbstractJobData {
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER)
-    private Set<Assignment> assignments = new HashSet<>();
+    private final Set<Assignment> assignments = new HashSet<>();
 
     @JsonIgnore
     @ManyToMany(targetEntity = Account.class)
@@ -32,7 +32,7 @@ public class Project extends AbstractJobData {
             name = "project_members",
             joinColumns = @JoinColumn(name = "project_id"),
             inverseJoinColumns = @JoinColumn(name = "account_id"))
-    Set<Account> accounts = new HashSet<>();
+    private final Set<Account> accounts = new HashSet<>();
 
     public Long getId() {
         return id;

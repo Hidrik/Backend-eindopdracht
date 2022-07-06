@@ -11,7 +11,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 @SpringBootTest
 public class ProjectTest {
@@ -49,7 +48,7 @@ public class ProjectTest {
         assignments.add(ass);
         proj.addAssignment(ass);
 
-        assertThat(proj.getAssignments().iterator().next()).isEqualToComparingFieldByField(assignments.iterator().next());
+        assertThat(proj.getAssignments()).usingRecursiveComparison().isEqualTo(assignments);
 
         proj.removeAssignment(ass);
         assertEquals(proj.getAssignments(), emptySet);
@@ -68,7 +67,9 @@ public class ProjectTest {
         accounts.add(acc);
         proj.addAccount(acc);
 
-        assertThat(proj.getAccounts().iterator().next()).isEqualToComparingFieldByField(accounts.iterator().next());
+        assertThat(proj.getAccounts())
+                .usingRecursiveComparison()
+                .isEqualTo(accounts);
 
         proj.removeAccount(acc);
         assertEquals(proj.getAccounts(), emptySet);

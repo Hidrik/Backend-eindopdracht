@@ -1,6 +1,5 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
@@ -23,7 +22,9 @@ public interface ComponentService {
 
     Component getComponent(Long id);
 
-    boolean deleteComponent(Long id);
+    Component saveComponent(Component component);
+
+    void deleteComponent(Long id);
 
     Component addComponentToAssignment(Assignment assignment, Long componentId, Integer amount);
 
@@ -31,13 +32,13 @@ public interface ComponentService {
 
     Boolean hasFile(Long id);
 
-    boolean saveFile(Long id, MultipartFile file);
+    void saveFile(Long id, MultipartFile file);
 
     Resource loadFile(Long id);
 
-    boolean deleteFile(Long id);
+    void deleteFile(Long id);
 
-    boolean saveFileInfo(Long id, String fileName, String url);
+    void saveFileInfo(Long id, String fileName, String url);
 
     String deleteFileInfo(Long id);
 

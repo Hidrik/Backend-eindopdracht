@@ -1,10 +1,11 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Component;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Project;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class AssignmentDto extends AbstractJobDataDto {
     private Long id;
@@ -13,7 +14,7 @@ public class AssignmentDto extends AbstractJobDataDto {
     private String assignmentCode;
 
     @JsonSerialize
-    Set<ComponentSummaryDto> components = new HashSet<>();
+    private final Set<ComponentSummaryDto> components = new HashSet<>();
 
     @JsonSerialize
     private Map<Long, Integer> amountOfComponentById = new HashMap<>();

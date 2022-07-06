@@ -20,7 +20,7 @@ import java.security.Principal;
 @RestController
 public class AuthenticationController {
 
-    /*autowire authentionManager, userDetailService en jwtUtil*/
+    /*autowired AuthenticationManager, userDetailService en jwtUtil*/
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -37,7 +37,7 @@ public class AuthenticationController {
 
 
     @PostMapping(value = "/authenticate")
-    public ResponseEntity<AuthenticationResponse> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+    public ResponseEntity<AuthenticationResponse> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) {
 
         String username = authenticationRequest.getUsername();
         String password = authenticationRequest.getPassword();
