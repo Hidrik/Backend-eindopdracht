@@ -38,6 +38,8 @@ public interface AssignmentService {
 
     String generateAssignmentCode(String projectCode);
 
+    String generateFinishedWorkDescription(Assignment assignment, String description);
+
     boolean assignmentCodeExists(String assignmentCode);
 
     AssignmentDto toAssignmentDto(Assignment ass);

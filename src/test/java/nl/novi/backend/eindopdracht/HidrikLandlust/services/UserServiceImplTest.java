@@ -9,6 +9,7 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.User;
 import nl.novi.backend.eindopdracht.HidrikLandlust.repositories.UserRepository;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,9 @@ public class UserServiceImplTest {
         //Because a new instance is made of AccountSummaryDto
         generatedDto.setAccount(testDto.getAccount());
 
-        assertThat(generatedDto).isEqualToComparingFieldByField(testDto);
+        AssertionsForClassTypes.assertThat(generatedDto)
+                .usingRecursiveComparison()
+                .isEqualTo(testDto);
     }
 
     @Test
@@ -73,7 +76,9 @@ public class UserServiceImplTest {
 
         User generatedUser = userService.toUser(dto);
 
-        assertThat(generatedUser).isEqualToComparingFieldByField(testUser);
+        AssertionsForClassTypes.assertThat(generatedUser)
+                .usingRecursiveComparison()
+                .isEqualTo(testUser);
     }
 
     @Test
@@ -96,7 +101,9 @@ public class UserServiceImplTest {
         UserDto recievedUserDto = userService.getUsersDto().get(0);
         recievedUserDto.setAccount(userDto.getAccount());
 
-        assertThat(recievedUserDto).isEqualToComparingFieldByField(usersDto.get(0));
+        AssertionsForClassTypes.assertThat(recievedUserDto)
+                .usingRecursiveComparison()
+                .isEqualTo(usersDto.get(0));
     }
 
     @Test

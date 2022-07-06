@@ -118,6 +118,7 @@ public class TestUtils {
         assignment.setProgressPercentage((byte) 100);
         assignment.setHoursWorked((short) 100);
         assignment.setId(1L);
+        assignment.setCosts(0);
 
         Map<Long, Integer> amountOfComponentsById = new HashMap<>();
         assignment.setAmountOfComponentById(amountOfComponentsById);
@@ -138,7 +139,7 @@ public class TestUtils {
         dto.setDescriptionFinishedWork("Test test test test test");
         dto.setHoursWorked((short) 100);
         dto.setId(1L);
-        dto.setProgressPercentage((byte) 50);
+        dto.setProgressPercentage((byte) 100);
 
         return dto;
     }
@@ -153,6 +154,7 @@ public class TestUtils {
         dto.setProgressPercentage((byte) 100);
         dto.setHoursWorked((short) 100);
         dto.setId(1L);
+        dto.setCosts(0);
 
         Map<Long, Integer> amountOfComponentsById = new HashMap<>();
         dto.setAmountOfComponentById(amountOfComponentsById);

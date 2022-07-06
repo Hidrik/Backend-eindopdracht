@@ -3,6 +3,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.InternalFailureException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
@@ -16,6 +17,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AssignmentServiceImpl implements AssignmentService {
@@ -34,8 +36,9 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     public Assignment getAssignment(Long id) {
-        if (assignmentRepository.findById(id).isPresent()) {
-            return assignmentRepository.findById(id).get();
+        Optional<Assignment> assignmentOptional = assignmentRepository.findById(id);
+        if (assignmentOptional.isPresent()) {
+            return assignmentOptional.get();
         }
         throw new RecordNotFoundException("Cant find assignment with id " + id);
     }
@@ -63,21 +66,22 @@ public class AssignmentServiceImpl implements AssignmentService {
         if (dto.getBudget() != null) assignment.setBudget(dto.getBudget());
         if (dto.getProgressPercentage() != null) assignment.setProgressPercentage(dto.getProgressPercentage());
         if (dto.getDescription() != null) assignment.setDescription(dto.getDescription());
-        Assignment savedAssignment = assignmentRepository.save(assignment);
-        return toAssignmentSummaryDto(savedAssignment);
+        try {
+            Assignment savedAssignment = assignmentRepository.save(assignment);
+            return toAssignmentSummaryDto(savedAssignment);
+        } catch (Exception e) {
+            throw new InternalFailureException("Cant save assignment after updating!");
+        }
+
+
     }
 
     @Override
     public AssignmentSummaryDto updateAssignmentFinishedWork(Long id, AssignmentSummaryDto summaryDto) {
         Assignment assignment = getAssignment(id);
-        String oldDescription = assignment.getDescriptionFinishedWork();
+        String description = generateFinishedWorkDescription(assignment, summaryDto.getDescriptionFinishedWork());
 
-        String newDescription = "";
-        if (oldDescription == "") newDescription += " ||| ";
-
-        newDescription += new Timestamp(new Date().getTime()) + ": " + summaryDto.getDescriptionFinishedWork() + " ||| ";
-
-        assignment.setDescriptionFinishedWork(oldDescription + newDescription);
+        assignment.setDescriptionFinishedWork(description);
 
         Short hoursWorked = (short) (assignment.getHoursWorked() + summaryDto.getHoursWorked());
         assignment.setHoursWorked(hoursWorked);
@@ -201,6 +205,17 @@ public class AssignmentServiceImpl implements AssignmentService {
             i ++;
         }
         return projectCode + "-" + i;
+    }
+
+    @Override
+    public String generateFinishedWorkDescription(Assignment assignment, String description) {
+        String oldDescription = assignment.getDescriptionFinishedWork();
+
+        String newDescription = "";
+        if (oldDescription != "") newDescription += " ||| ";
+
+        newDescription += new Timestamp(new Date().getTime()) + ": " + description;
+        return oldDescription + newDescription;
     }
 
     @Override
