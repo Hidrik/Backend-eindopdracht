@@ -1,9 +1,5 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
-
-import java.util.Set;
-
 public class ComponentSummaryDto {
 
     private Long id;

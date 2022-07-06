@@ -1,6 +1,5 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.models.entities;
 
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 import org.springframework.stereotype.Service;
 

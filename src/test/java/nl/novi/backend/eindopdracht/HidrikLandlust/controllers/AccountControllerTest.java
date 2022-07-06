@@ -1,12 +1,9 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.TestUtils;
-import nl.novi.backend.eindopdracht.HidrikLandlust.config.SpringSecurityConfig;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountSummaryDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
-import nl.novi.backend.eindopdracht.HidrikLandlust.filter.JwtRequestFilter;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.AccountService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.CustomUserDetailsService;
 import nl.novi.backend.eindopdracht.HidrikLandlust.utils.FileStorage;
@@ -52,8 +49,11 @@ public class AccountControllerTest {
     @MockBean
     JwtUtil jwtUtil;
 
+    private final String admin = "ADMIN";
+    private final String user = "USER";
+
     @Test
-    @WithMockUser(roles="ADMIN") //For authorisation
+    @WithMockUser(roles=admin) //For authorisation
     void getAllAccountsAuthorizedTest() throws Exception {
         List<AccountSummaryDto> dtos  = new ArrayList<>();
         AccountSummaryDto dto = generateAccountSummaryDto();
@@ -71,8 +71,8 @@ public class AccountControllerTest {
     }
 
     @Test
-    @WithMockUser(roles="USER") //For authorisation
-    void getAllAccountsUnauthorizedFailsTest() throws Exception {
+    @WithMockUser(roles=user) //For authorisation
+    void getAllAccountsAsUserFailsTest() throws Exception {
 
         mockMvc
                 .perform(MockMvcRequestBuilders.get("/accounts"))
@@ -81,7 +81,17 @@ public class AccountControllerTest {
     }
 
     @Test
-    @WithMockUser(roles="ADMIN") //For authorisation
+    void getAllAccountsUnAuthorizedFailsTest() throws Exception {
+
+        mockMvc
+                .perform(MockMvcRequestBuilders.get("/accounts"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+
+    @Test
+    @WithMockUser(roles=admin) //For authorisation
     void getAccountAuthorizedTest() throws Exception {
         AccountDto dto = generateAccountDto();
 
@@ -101,7 +111,7 @@ public class AccountControllerTest {
     }
 
     @Test
-    @WithMockUser(roles="USER") //For authorisation
+    @WithMockUser(roles=user) //For authorisation
     void getAccountUnauthorizedFailsTest() throws Exception {
 
         mockMvc
@@ -111,7 +121,7 @@ public class AccountControllerTest {
     }
 
     @Test
-    @WithMockUser(roles="ADMIN") //For authorisation
+    @WithMockUser(roles=admin) //For authorisation
     void getAccountAuthorizedAccountNotFoundTest() throws Exception {
         AccountDto dto = generateAccountDto();
         String exceptionMessage = String.format("Account with id %s does not exist.", dto.getId());
@@ -128,7 +138,7 @@ public class AccountControllerTest {
     }
 
     @Test
-    @WithMockUser(roles="ADMIN") //For authorisation
+    @WithMockUser(roles=admin) //For authorisation
     void updateAccountSucceeds() throws Exception {
         AccountSummaryDto dto = generateAccountSummaryDto();
 
@@ -145,7 +155,7 @@ public class AccountControllerTest {
     }
 
     @Test
-    @WithMockUser(roles="USER") //For authorisation
+    @WithMockUser(roles=user) //For authorisation
     void updateAccountUnauthorizedFails() throws Exception {
         AccountSummaryDto dto = generateAccountSummaryDto();
 
@@ -160,7 +170,7 @@ public class AccountControllerTest {
     }
 
     @Test
-    @WithMockUser(roles="ADMIN") //For authorisation
+    @WithMockUser(roles=admin) //For authorisation
     void updateAccountAuthorizedFailsNotFound() throws Exception {
         AccountSummaryDto dto = generateAccountSummaryDto();
         String exceptionMessage = "Test exception";

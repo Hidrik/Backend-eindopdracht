@@ -211,7 +211,7 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void updateUserFailsNotAutorized() throws Exception {
+    void updateUserFailsNotAuthorized() throws Exception {
 
         mockMvc
                 .perform(MockMvcRequestBuilders

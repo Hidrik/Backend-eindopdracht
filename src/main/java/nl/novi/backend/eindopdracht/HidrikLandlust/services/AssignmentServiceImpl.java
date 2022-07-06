@@ -3,6 +3,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.InternalFailureException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
@@ -16,6 +17,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AssignmentServiceImpl implements AssignmentService {
@@ -33,25 +35,8 @@ public class AssignmentServiceImpl implements AssignmentService {
     AccountService accountService;
 
     @Override
-    public Assignment getAssignment(Long id) {
-        if (assignmentRepository.findById(id).isPresent()) {
-            return assignmentRepository.findById(id).get();
-        }
-        throw new RecordNotFoundException("Cant find assignment with id " + id);
-    }
-
-    @Override
     public AssignmentDto getAssignmentDto(Long id) {
         return toAssignmentDto(getAssignment(id));
-    }
-
-    @Override
-    public List<AssignmentDto> getAllAssignmentsDto() {
-        List<AssignmentDto> dtos = new ArrayList<>();
-        for (Assignment ass: assignmentRepository.findAll()){
-            dtos.add(toAssignmentDto(ass));
-        }
-        return dtos;
     }
 
     @Override
@@ -63,43 +48,64 @@ public class AssignmentServiceImpl implements AssignmentService {
         if (dto.getBudget() != null) assignment.setBudget(dto.getBudget());
         if (dto.getProgressPercentage() != null) assignment.setProgressPercentage(dto.getProgressPercentage());
         if (dto.getDescription() != null) assignment.setDescription(dto.getDescription());
-        Assignment savedAssignment = assignmentRepository.save(assignment);
-        return toAssignmentSummaryDto(savedAssignment);
+
+        return toAssignmentSummaryDto(saveAssignment(assignment));
     }
 
     @Override
     public AssignmentSummaryDto updateAssignmentFinishedWork(Long id, AssignmentSummaryDto summaryDto) {
+        if (summaryDto.getHoursWorked() == null || summaryDto.getHoursWorked() <= 0) {
+            throw new BadRequestException("Hours worked can not be 0");
+        }
+        if (summaryDto.getProgressPercentage() == null || summaryDto.getProgressPercentage() <= 0) {
+            throw new BadRequestException("Progress percentage can not be 0");
+        }
+        if (summaryDto.getDescriptionFinishedWork() == null || summaryDto.getDescriptionFinishedWork().length() <= 0){
+            throw new BadRequestException("Must add description of finished work");
+        }
+
         Assignment assignment = getAssignment(id);
-        String oldDescription = assignment.getDescriptionFinishedWork();
 
-        String newDescription = "";
-        if (oldDescription == "") newDescription += " ||| ";
+        assignment.setDescriptionFinishedWork(
+                generateFinishedWorkDescription(
+                        assignment.getDescriptionFinishedWork(),
+                        summaryDto.getDescriptionFinishedWork()));
 
-        newDescription += new Timestamp(new Date().getTime()) + ": " + summaryDto.getDescriptionFinishedWork() + " ||| ";
+        assignment.setHoursWorked(
+                (short) (assignment.getHoursWorked() + summaryDto.getHoursWorked()));
 
-        assignment.setDescriptionFinishedWork(oldDescription + newDescription);
+        assignment.setProgressPercentage(
+                summaryDto.getProgressPercentage());
 
-        Short hoursWorked = (short) (assignment.getHoursWorked() + summaryDto.getHoursWorked());
-        assignment.setHoursWorked(hoursWorked);
-
-        if (summaryDto.getProgressPercentage() != null) assignment.setProgressPercentage(summaryDto.getProgressPercentage());
-
-        Assignment savedAssignment = assignmentRepository.save(assignment);
-
-        return toAssignmentSummaryDto(savedAssignment);
+        return toAssignmentSummaryDto(saveAssignment(assignment));
     }
 
-    public boolean deleteAssignment(Long assignmentId) {
-        try {
-            Assignment ass = getAssignment(assignmentId);
-            Project project = ass.getProject();
-            project.removeAssignment(ass);
-            projectService.saveProject(project);
-            return true;
+    @Override
+    public String generateFinishedWorkDescription(String oldDescription, String descriptionToAdd) {
 
-        } catch (Exception e) {
-            return false;
-        }
+        String newDescription = "";
+        if (!oldDescription.equalsIgnoreCase("")) newDescription += " ||| ";
+
+        newDescription += new Timestamp(new Date().getTime()) + ": " + descriptionToAdd;
+        return oldDescription + newDescription;
+    }
+
+    @Override
+    public AssignmentSummaryDto toAssignmentSummaryDto(Assignment ass) {
+        AssignmentSummaryDto dto = new AssignmentSummaryDto();
+        dto.setId(ass.getId());
+        dto.setHoursWorked(ass.getHoursWorked());
+        dto.setDescriptionFinishedWork(ass.getDescriptionFinishedWork());
+        dto.setAssignmentCode(ass.getAssignmentCode());
+        dto.setProgressPercentage(ass.getProgressPercentage());
+        return dto;
+    }
+
+    public void deleteAssignment(Long assignmentId) {
+        Assignment ass = getAssignment(assignmentId);
+        Project project = ass.getProject();
+        project.removeAssignment(ass);
+        projectService.saveProject(project);
     }
 
     @Override
@@ -111,16 +117,50 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         Assignment assignment = toAssignment(dto);
 
-
         Project project = projectService.getProjectFromProjectCode(projectCode);
         project.addAssignment(assignment);
 
         assignment.setProject(project);
-        Assignment savedAssignment = assignmentRepository.save(assignment);
+        Assignment savedAssignment = saveAssignment(assignment);
 
         projectService.saveProject(project);
 
         return toAssignmentDto(savedAssignment);
+    }
+
+    @Override
+    public String generateAssignmentCode(String projectCode) {
+        int i = 0;
+        while(true) {
+            i ++;
+            if (!assignmentCodeExists(projectCode + "-" + i)) break;
+        }
+        return projectCode + "-" + i;
+    }
+
+    @Override
+    public boolean assignmentCodeExists(String assignmentCode) {
+        return assignmentRepository.existsByAssignmentCode(assignmentCode);
+    }
+
+    @Override
+    public Assignment toAssignment(AssignmentDto dto) {
+        Assignment ass = new Assignment();
+        ass.setId(dto.getId());
+        ass.setHoursWorked(dto.getHoursWorked());
+        ass.setDescriptionFinishedWork(dto.getDescriptionFinishedWork());
+        ass.setDescription(dto.getDescription());
+        ass.setBudget(dto.getBudget());
+        ass.setDeadline(dto.getDeadline());
+        ass.setProgressPercentage(dto.getProgressPercentage());
+        ass.setCosts(ass.getCosts());
+        ass.setAssignmentCode(dto.getAssignmentCode());
+        ass.setAmountOfComponentById(dto.getAmountOfComponentById());
+
+        if (dto.getAccount() != null) ass.setAccount(accountService.toAccount(dto.getAccount()));
+        if (dto.getProject() != null) ass.setProject(projectService.toProject(dto.getProject()));
+
+        return ass;
     }
 
     @Override
@@ -134,10 +174,9 @@ public class AssignmentServiceImpl implements AssignmentService {
         if (currentAmount != null) amount += currentAmount;
         assignment.setAmountOfComponentById(componentId, amount);
 
-
         componentService.addComponentToAssignment(assignment, componentId, amount);
 
-        Assignment savedAssignment = assignmentRepository.save(assignment);
+        Assignment savedAssignment = saveAssignment(assignment);
 
         return toAssignmentDto(savedAssignment);
     }
@@ -154,7 +193,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             assignment.removeComponent(component);
         }
 
-        Assignment savedAssignment = assignmentRepository.save(assignment);
+        Assignment savedAssignment = saveAssignment(assignment);
 
         return toAssignmentDto(savedAssignment);
     }
@@ -168,39 +207,18 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         assignment.setAccount(account);
 
-
-        Assignment savedAssignment = assignmentRepository.save(assignment);
+        Assignment savedAssignment = saveAssignment(assignment);
 
         return toAssignmentDto(savedAssignment);
     }
 
-
-    public boolean removeAccountFromAssignment(Long assignmentId, Long accountId) {
-
-        try {
-            Assignment assignment = getAssignment(assignmentId);
-            assignment.setAccount(null);
-            assignmentRepository.save(assignment);
-            accountService.removeAssignmentFromAccount(assignment, accountId);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     @Override
-    public boolean assignmentCodeExists(String assignmentCode) {
-        return assignmentRepository.existsByAssignmentCode(assignmentCode);
-    }
-
-    @Override
-    public String generateAssignmentCode(String projectCode) {
-        int i = 1;
-        while(true) {
-            if (!assignmentCodeExists(projectCode + "-" + i)) break;
-            i ++;
+    public List<AssignmentDto> getAllAssignmentsDto() {
+        List<AssignmentDto> dtos = new ArrayList<>();
+        for (Assignment ass: assignmentRepository.findAll()){
+            dtos.add(toAssignmentDto(ass));
         }
-        return projectCode + "-" + i;
+        return dtos;
     }
 
     @Override
@@ -220,7 +238,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         //Could be null
         if (ass.getAccount() != null) dto.setAccount(accountService.toAccountSummaryDto(ass.getAccount()));
 
-        //Cant be null, assignment cant exist without project
+        //Can't be null, assignment can't exist without project
         dto.setProject(projectService.toProjectSummaryDto(ass.getProject()));
 
         if (ass.getComponents() != null) {
@@ -229,40 +247,32 @@ public class AssignmentServiceImpl implements AssignmentService {
             }
         }
 
-
         return dto;
     }
 
-    @Override
-    public AssignmentSummaryDto toAssignmentSummaryDto(Assignment ass) {
-        AssignmentSummaryDto dto = new AssignmentSummaryDto();
-        dto.setId(ass.getId());
-        dto.setHoursWorked(ass.getHoursWorked());
-        dto.setDescriptionFinishedWork(ass.getDescriptionFinishedWork());
-        dto.setAssignmentCode(ass.getAssignmentCode());
-        dto.setProgressPercentage(ass.getProgressPercentage());
-        return dto;
+    public void removeAccountFromAssignment(Long assignmentId, Long accountId) {
+        Assignment assignment = getAssignment(assignmentId);
+        assignment.setAccount(null);
+        saveAssignment(assignment);
+        accountService.removeAssignmentFromAccount(assignment, accountId);
     }
 
     @Override
-    public Assignment toAssignment(AssignmentDto dto) {
-        Assignment ass = new Assignment();
-        ass.setId(dto.getId());
-        ass.setHoursWorked(dto.getHoursWorked());
-        ass.setDescriptionFinishedWork(dto.getDescriptionFinishedWork());
-        ass.setDescription(dto.getDescription());
-        ass.setBudget(dto.getBudget());
-        ass.setDeadline(dto.getDeadline());
-        ass.setProgressPercentage(dto.getProgressPercentage());
-        ass.setCosts(ass.getCosts());
-        ass.setAssignmentCode(dto.getAssignmentCode());
-        ass.setAmountOfComponentById(dto.getAmountOfComponentById());
+    public Assignment getAssignment(Long id) {
+        Optional<Assignment> assignmentOptional = assignmentRepository.findById(id);
+        if (assignmentOptional.isPresent()) {
+            return assignmentOptional.get();
+        }
+        throw new RecordNotFoundException("Cant find assignment with id " + id);
+    }
 
-
-        if (dto.getAccount() != null) ass.setAccount(accountService.toAccount(dto.getAccount()));
-        if (dto.getProject() != null) ass.setProject(projectService.toProject(dto.getProject()));
-
-        return ass;
+    @Override
+    public Assignment saveAssignment(Assignment assignment) {
+        try {
+            return assignmentRepository.save(assignment);
+        } catch (Exception e) {
+            throw new InternalFailureException("Cant save assignment after updating!");
+        }
     }
 
     @Override
@@ -276,4 +286,5 @@ public class AssignmentServiceImpl implements AssignmentService {
         ass.setProgressPercentage(dto.getProgressPercentage());
         return ass;
     }
+
 }

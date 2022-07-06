@@ -2,8 +2,6 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import java.time.LocalDate;
 
 public class AbstractJobDataDto {

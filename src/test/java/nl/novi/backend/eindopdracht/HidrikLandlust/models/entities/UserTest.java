@@ -16,7 +16,7 @@ public class UserTest {
         User user = new User();
         String username = "test";
         String password = "password";
-        Boolean enabled = true;
+        boolean enabled = true;
         String email = "test@test.test";
 
         user.setUsername(username);

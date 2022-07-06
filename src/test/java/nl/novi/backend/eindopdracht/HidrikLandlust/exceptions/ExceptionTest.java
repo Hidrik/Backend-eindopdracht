@@ -9,8 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SpringBootTest
 public class ExceptionTest {
-    String testString = "TEST";
-    String stringTest = "TSET";
+    private final String testString = "TEST";
 
     @Test
     void badRequestExceptionGivesMessage() {

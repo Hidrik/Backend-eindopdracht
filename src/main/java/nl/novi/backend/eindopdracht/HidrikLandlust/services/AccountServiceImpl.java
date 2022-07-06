@@ -2,7 +2,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountSummaryDto;
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.InternalFailureException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
@@ -22,62 +22,8 @@ public class AccountServiceImpl implements AccountService {
     AccountRepository accountRepository;
 
     @Override
-    public Account getAccount(Long id) {
-        Optional<Account> optionalAccount = accountRepository.findById(id);
-        if (optionalAccount.isPresent()) return optionalAccount.get();
-
-        throw new RecordNotFoundException(String.format("Account with id %s does not exist.", id));
-    }
-
-    @Override
-    public List<Account> getAccounts() {
-        return accountRepository.findAll();
-    }
-
-    @Override
     public AccountDto getAccountDto(Long id) {
         return toAccountDto(getAccount(id));
-    }
-
-    @Override
-    public AccountSummaryDto getAccountSummaryDto(Long id) {
-        return toAccountSummaryDto(getAccount(id));
-    }
-
-    @Override
-    public List<AccountSummaryDto> getAccountsSummaryDto() {
-        List<AccountSummaryDto> dtos = new ArrayList<>();
-        List<Account> accounts = getAccounts();
-        if (accounts.size() > 0) {
-            for (Account account : accounts) {
-                dtos.add(toAccountSummaryDto(account));
-            }
-        }
-        return dtos;
-    }
-
-    @Override
-    public AccountSummaryDto updateAccount(Long id, AccountSummaryDto dto) {
-        Account account = getAccount(id);
-        if (dto.getEmployeeFunction() != null) account.setEmployeeFunction(dto.getEmployeeFunction());
-        if (dto.getFirstName() != null) account.setFirstName(dto.getFirstName());
-        if (dto.getLastName() != null) account.setLastName(dto.getLastName());
-
-        Account savedAccount = accountRepository.save(account);
-        return toAccountSummaryDto(savedAccount);
-    }
-
-    @Override
-    public void deleteAccount(Long id) {
-        Optional<Account> optionalAccount = accountRepository.findById(id);
-        if (optionalAccount.isPresent()) accountRepository.delete(optionalAccount.get());
-    }
-
-    @Override
-    public void removeAssignmentFromAccount(Assignment assignment, Long accountId) {
-        Account account = getAccount(accountId);
-        account.removeAssignment(assignment);
-        accountRepository.save(account);
     }
 
     @Override
@@ -99,6 +45,43 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public AccountSummaryDto getAccountSummaryDto(Long id) {
+        return toAccountSummaryDto(getAccount(id));
+    }
+
+    @Override
+    public List<AccountSummaryDto> getAccountsSummaryDto() {
+        List<AccountSummaryDto> dtos = new ArrayList<>();
+        List<Account> accounts = getAccounts();
+        if (accounts.size() > 0) {
+            for (Account account : accounts) {
+                dtos.add(toAccountSummaryDto(account));
+            }
+        }
+        return dtos;
+    }
+
+    @Override
+    public List<Account> getAccounts() {
+        return accountRepository.findAll();
+    }
+
+    @Override
+    public AccountSummaryDto updateAccount(Long id, AccountSummaryDto dto) {
+        Account account = getAccount(id);
+        if (dto.getEmployeeFunction() != null) account.setEmployeeFunction(dto.getEmployeeFunction());
+        if (dto.getFirstName() != null) account.setFirstName(dto.getFirstName());
+        if (dto.getLastName() != null) account.setLastName(dto.getLastName());
+        try {
+            Account savedAccount = accountRepository.save(account);
+            return toAccountSummaryDto(savedAccount);
+        } catch (Exception e) {
+            throw new InternalFailureException(String.format("Can not save account with id %s after updating.", id));
+        }
+
+    }
+
+    @Override
     public AccountSummaryDto toAccountSummaryDto(Account account) {
         AccountSummaryDto dto = new AccountSummaryDto();
         dto.setId(account.getId());
@@ -106,6 +89,37 @@ public class AccountServiceImpl implements AccountService {
         dto.setLastName(account.getLastName());
         dto.setEmployeeFunction(account.getEmployeeFunction());
         return dto;
+    }
+
+    @Override
+    public void deleteAccount(Long id) {
+        Account account = getAccount(id);
+        try {
+            accountRepository.delete(account);
+        } catch (Exception e){
+            throw new InternalFailureException(String.format("Can not delete account with id %s", id));
+        }
+
+    }
+
+    @Override
+    public void removeAssignmentFromAccount(Assignment assignment, Long accountId) {
+        Account account = getAccount(accountId);
+        account.removeAssignment(assignment);
+
+        try {
+            accountRepository.save(account);
+        } catch (Exception e) {
+            throw new InternalFailureException(String.format("Can not save account after with id %s after removing assignment.", accountId));
+        }
+    }
+
+    @Override
+    public Account getAccount(Long id) {
+        Optional<Account> optionalAccount = accountRepository.findById(id);
+        if (optionalAccount.isPresent()) return optionalAccount.get();
+
+        throw new RecordNotFoundException(String.format("Account with id %s does not exist.", id));
     }
 
     @Override
@@ -142,4 +156,5 @@ public class AccountServiceImpl implements AccountService {
 
         return account;
     }
+
 }

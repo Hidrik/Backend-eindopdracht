@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 public class AuthenticationResponseTest {
-    String testJwt = "12345";
-    AuthenticationResponse auth = new AuthenticationResponse(testJwt);
+    private final String testJwt = "12345";
+    private final AuthenticationResponse auth = new AuthenticationResponse(testJwt);
 
     @Test
     void getAuthenticationResponseSucceeds() {

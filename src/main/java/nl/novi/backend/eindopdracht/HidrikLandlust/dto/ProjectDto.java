@@ -2,8 +2,6 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.dto;
 
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
 
 import java.util.HashSet;
 import java.util.Set;

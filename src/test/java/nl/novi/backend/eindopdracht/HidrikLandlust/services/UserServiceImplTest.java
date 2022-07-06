@@ -1,35 +1,30 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.AlreadyExistsException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
-import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Authority;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.User;
 import nl.novi.backend.eindopdracht.HidrikLandlust.repositories.UserRepository;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static nl.novi.backend.eindopdracht.HidrikLandlust.TestUtils.generateUserDto;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-public class UserServiceImplTest {
+class UserServiceImplTest {
     @Autowired
     UserService userService;
 
@@ -55,7 +50,9 @@ public class UserServiceImplTest {
         //Because a new instance is made of AccountSummaryDto
         generatedDto.setAccount(testDto.getAccount());
 
-        assertThat(generatedDto).isEqualToComparingFieldByField(testDto);
+        AssertionsForClassTypes.assertThat(generatedDto)
+                .usingRecursiveComparison()
+                .isEqualTo(testDto);
     }
 
     @Test
@@ -73,7 +70,9 @@ public class UserServiceImplTest {
 
         User generatedUser = userService.toUser(dto);
 
-        assertThat(generatedUser).isEqualToComparingFieldByField(testUser);
+        AssertionsForClassTypes.assertThat(generatedUser)
+                .usingRecursiveComparison()
+                .isEqualTo(testUser);
     }
 
     @Test
@@ -93,10 +92,12 @@ public class UserServiceImplTest {
         when(userRepository.findAll()).thenReturn(users);
 
         //This is done because otherwise 2 different instances of AccountSummaryDto is used and this test fails
-        UserDto recievedUserDto = userService.getUsersDto().get(0);
-        recievedUserDto.setAccount(userDto.getAccount());
+        UserDto receivedUserDto = userService.getUsersDto().get(0);
+        receivedUserDto.setAccount(userDto.getAccount());
 
-        assertThat(recievedUserDto).isEqualToComparingFieldByField(usersDto.get(0));
+        AssertionsForClassTypes.assertThat(receivedUserDto)
+                .usingRecursiveComparison()
+                .isEqualTo(usersDto.get(0));
     }
 
     @Test
@@ -117,13 +118,13 @@ public class UserServiceImplTest {
         when(userRepository.findById(any(String.class))).thenReturn(Optional.of(user));
         when(userRepository.existsById(any(String.class))).thenReturn(true);
 
-        UserDto recievedDto = userService.getUserDto(userDto.getUsername());
+        UserDto receivedDto = userService.getUserDto(userDto.getUsername());
 
-        assertEquals(recievedDto.getAuthorities(), userDto.getAuthorities());
-        assertEquals(recievedDto.getEmail(), userDto.getEmail());
-        assertEquals(recievedDto.getUsername(), userDto.getUsername());
-        assertEquals(recievedDto.getEnabled(), userDto.getEnabled());
-        assertEquals(recievedDto.getPassword(), userDto.getPassword());
+        assertEquals(receivedDto.getAuthorities(), userDto.getAuthorities());
+        assertEquals(receivedDto.getEmail(), userDto.getEmail());
+        assertEquals(receivedDto.getUsername(), userDto.getUsername());
+        assertEquals(receivedDto.getEnabled(), userDto.getEnabled());
+        assertEquals(receivedDto.getPassword(), userDto.getPassword());
 
         //Can't assertEquals the Account due to different instances
     }
@@ -190,7 +191,6 @@ public class UserServiceImplTest {
     @Test
     void creationOfUserFailesUsernameAlreadyExists() {
         UserDto dto = generateUserDto();
-        User user = userService.toUser(dto);
 
         when(userRepository.existsById(dto.getUsername())).thenReturn(true);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(false);
@@ -201,7 +201,6 @@ public class UserServiceImplTest {
     @Test
     void creationOfUserFailesEmailAlreadyInUse() {
         UserDto dto = generateUserDto();
-        User user = userService.toUser(dto);
 
         when(userRepository.existsById(dto.getUsername())).thenReturn(false);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(true);

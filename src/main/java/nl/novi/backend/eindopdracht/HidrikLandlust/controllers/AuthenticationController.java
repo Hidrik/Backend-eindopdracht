@@ -1,5 +1,6 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.controllers;
 
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.payload.AuthenticationRequest;
 import nl.novi.backend.eindopdracht.HidrikLandlust.payload.AuthenticationResponse;
 import nl.novi.backend.eindopdracht.HidrikLandlust.services.CustomUserDetailsService;
@@ -19,7 +20,7 @@ import java.security.Principal;
 @RestController
 public class AuthenticationController {
 
-    /*autowire authentionManager, userDetailService en jwtUtil*/
+    /*autowired AuthenticationManager, userDetailService en jwtUtil*/
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -36,7 +37,7 @@ public class AuthenticationController {
 
 
     @PostMapping(value = "/authenticate")
-    public ResponseEntity<AuthenticationResponse> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+    public ResponseEntity<AuthenticationResponse> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) {
 
         String username = authenticationRequest.getUsername();
         String password = authenticationRequest.getPassword();
@@ -47,7 +48,7 @@ public class AuthenticationController {
             );
         }
         catch (BadCredentialsException ex) {
-            throw new Exception("Incorrect username or password", ex);
+            throw new BadRequestException("Incorrect username or password");
         }
 
         final UserDetails userDetails = userDetailsService

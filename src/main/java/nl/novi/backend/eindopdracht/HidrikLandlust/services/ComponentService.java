@@ -1,6 +1,5 @@
 package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
-import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AssignmentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ComponentSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
@@ -22,6 +21,8 @@ public interface ComponentService {
     ComponentDto updateComponent(Long id, ComponentDto dto);
 
     Component getComponent(Long id);
+
+    Component saveComponent(Component component);
 
     void deleteComponent(Long id);
 
