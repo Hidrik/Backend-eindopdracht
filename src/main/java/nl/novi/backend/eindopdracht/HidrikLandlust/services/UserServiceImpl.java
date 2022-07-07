@@ -128,7 +128,7 @@ public class UserServiceImpl implements UserService {
         var dto = new UserDto();
 
         dto.setUsername(user.getUsername());
-        dto.setPassword(user.getPassword());
+        dto.setPassword("***********");
         dto.setEnabled(user.isEnabled());
         dto.setEmail(user.getEmail());
         dto.setAuthorities(user.getAuthorities());

@@ -19,8 +19,8 @@ public class AssignmentController {
     AssignmentService assignmentService;
 
     @GetMapping(value = "")
-    public ResponseEntity<List<AssignmentDto>> getAssignments() {
-        List<AssignmentDto> assignments = assignmentService.getAllAssignmentsDto();
+    public ResponseEntity<List<AssignmentSummaryDto>> getAssignments() {
+        List<AssignmentSummaryDto> assignments = assignmentService.getAllAssignmentsDto();
 
         return ResponseEntity.ok().body(assignments);
     }
@@ -39,7 +39,7 @@ public class AssignmentController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping(value = "/finishedWork/{id}")
+    @PutMapping(value = "/{id}/finishedWork")
     public ResponseEntity<AssignmentDto> updateFinishedWork(@PathVariable("id") Long id, @RequestBody AssignmentSummaryDto summaryDto) {
         assignmentService.updateAssignmentFinishedWork(id, summaryDto);
 
@@ -50,7 +50,7 @@ public class AssignmentController {
     public ResponseEntity<Object> deleteAssignment(@PathVariable("id") Long id) {
         assignmentService.deleteAssignment(id);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.accepted().build();
     }
 
     @PutMapping(value = "/{id}/components/{componentId}")

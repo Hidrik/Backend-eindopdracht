@@ -57,8 +57,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
                 .antMatchers(HttpMethod.GET,"/users").hasRole("ADMIN")
-                .antMatchers("/users/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.POST,"/users/**/authorities").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET,"/users/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT,"/users/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE,"/users/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT,"/users/**/authorities").hasRole("ADMIN")
                 .antMatchers(HttpMethod.DELETE,"/users/**/authorities").hasRole("ADMIN")
                 //AuthenticationController endpoints
                 .antMatchers(HttpMethod.POST,"/authenticate").permitAll()
@@ -78,7 +80,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/assignments/**").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.PUT, "/assignments/**").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/assignments/**").hasAnyRole("USER", "ADMIN")
-                .antMatchers(HttpMethod.PUT, "/assignments/finishedWork/**").hasAnyRole("USER", "ADMIN")
+                .antMatchers(HttpMethod.PUT, "/assignments/**/finishedWork").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.PUT, "/assignments/**/components/**").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/assignments/**/components/**").hasAnyRole("USER", "ADMIN")
                 //ComponentController endpoints
@@ -91,7 +93,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/components/**/file").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/components/**/file").hasAnyRole("USER", "ADMIN")
                 //AccountController endpoints
-                .antMatchers(HttpMethod.GET, "/accounts").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/accounts").hasAnyRole("ADMIN", "USER")
                 .antMatchers(HttpMethod.GET, "/accounts/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.PUT, "/accounts/**").hasRole("ADMIN")
                 .and()

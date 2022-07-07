@@ -6,6 +6,7 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.InternalFailureExc
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
+import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Project;
 import nl.novi.backend.eindopdracht.HidrikLandlust.repositories.AccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,12 +69,13 @@ public class AccountServiceImplTest {
         Account account = generateAccount();
         Optional<Account> optionalAccount = Optional.of(account);
         AccountDto dto = generateAccountDto();
-        dto.setProjects(account.getProjects()); //So that they are same instance for asserting equal.
+        //dto.setProjects(account.getProjects()); //So that they are same instance for asserting equal.
 
         when(accountRepository.findById(any(Long.class))).thenReturn(optionalAccount);
 
         assertThat(accountService.getAccountDto(account.getId()))
                 .usingRecursiveComparison()
+                .ignoringFields("projects")
                 .isEqualTo(dto);
     }
 
@@ -247,10 +249,11 @@ public class AccountServiceImplTest {
     void toAccountDtoFromAccountSucceeds() {
         AccountDto dto = generateAccountDto();
         Account account = generateAccount();
-        dto.setProjects(account.getProjects()); //So that they are the same instance when asserting projects equal.
+        //dto.setProjects(account.getProjects()); //So that they are the same instance when asserting projects equal.
 
         assertThat(accountService.toAccountDto(account))
                 .usingRecursiveComparison()
+                .ignoringFields("projects")
                 .isEqualTo(dto);
     }
 
@@ -268,12 +271,12 @@ public class AccountServiceImplTest {
     void toAccountFromAccountDtoSucceeds() {
         AccountDto dto = generateAccountDto();
         Account account = generateAccount();
-        account.setProjects(dto.getProjects()); //So that they are the same instance when asserting projects equal.
         account.setCreatedOn(null); // GenerateAccount also generates createdOn & updatedOn value, DTO does not have this attribute
         account.setUpdatedOn(null); // so accountService.toAccount always return's createdOn & updatedOn as null.
 
         assertThat(accountService.toAccount(dto))
                 .usingRecursiveComparison()
+                .ignoringFields("projects")
                 .isEqualTo(account);
     }
 

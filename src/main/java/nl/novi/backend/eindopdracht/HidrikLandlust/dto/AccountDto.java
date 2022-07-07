@@ -19,7 +19,7 @@ public class AccountDto {
     private String city;
 
     @JsonSerialize
-    Set<Project> projects = new HashSet<>();
+    Set<ProjectSummaryDto> projects = new HashSet<>();
 
     @JsonSerialize
     Set<Assignment> assignments = new HashSet<>();
@@ -56,11 +56,11 @@ public class AccountDto {
         this.employeeFunction = employeeFunction;
     }
 
-    public Set<Project> getProjects() {
+    public Set<ProjectSummaryDto> getProjects() {
         return projects;
     }
 
-    public void setProjects(Set<Project> projects) {
+    public void setProjects(Set<ProjectSummaryDto> projects) {
         this.projects = projects;
     }
 
