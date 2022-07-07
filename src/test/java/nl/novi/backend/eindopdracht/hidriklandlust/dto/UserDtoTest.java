@@ -39,7 +39,7 @@ public class UserDtoTest {
     @Test
     void getCorrectEmailAfterSettingFalse() {
         generatedUser.setEmail("TEST.USER.1");
-        assertEquals("TEST.USER.1", generatedUser.getEmail();
+        assertEquals("TEST.USER.1", generatedUser.getEmail());
     }
 
     @Test
