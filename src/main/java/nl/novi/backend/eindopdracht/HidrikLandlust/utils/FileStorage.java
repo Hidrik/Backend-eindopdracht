@@ -13,5 +13,4 @@ public interface FileStorage {
     void delete(String fileName, Long componentId);
     void deleteAll();
     Boolean fileExists(String fileName, Long componentId);
-    /*  Stream<Path> loadAll();*/
 }

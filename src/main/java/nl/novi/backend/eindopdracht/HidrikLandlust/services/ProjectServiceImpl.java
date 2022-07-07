@@ -129,7 +129,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Long updateProject(String projectCode, ProjectDto dto) {
+    public ProjectDto updateProject(String projectCode, ProjectDto dto) {
 
         Project project = getProjectFromProjectCode(projectCode);
 
@@ -138,8 +138,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (dto.getDescription() != null) {project.setDescription(dto.getDescription());}
         if (dto.getProjectCode() != null) {project.setProjectCode(dto.getProjectCode());}
         if (dto.getProgressPercentage() != null) {project.setProgressPercentage(dto.getProgressPercentage());}
-        saveProject(project);
-        return dto.getId();
+        return toProjectDto(saveProject(project));
     }
 
     @Override

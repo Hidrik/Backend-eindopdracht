@@ -19,7 +19,7 @@ public interface ProjectService {
 
     ProjectSummaryDto createProject(ProjectDto dto);
 
-    Long updateProject(String projectCode, ProjectDto dto);
+    ProjectDto updateProject(String projectCode, ProjectDto dto);
 
     Project saveProject(Project project);
 

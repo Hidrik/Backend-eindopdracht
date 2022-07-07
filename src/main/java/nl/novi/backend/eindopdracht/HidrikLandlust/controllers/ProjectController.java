@@ -53,10 +53,10 @@ public class ProjectController {
 
     @PutMapping(value = "/{projectCode}")
     public ResponseEntity<ProjectDto> changeProject(@PathVariable("projectCode") String projectCode, @RequestBody ProjectDto dto) {
-        Long id = projectService.updateProject(projectCode, dto);
+        ProjectDto updatedDto = projectService.updateProject(projectCode, dto);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/assignments/{projectCode}")
-                .buildAndExpand(id).toUri();
+                .buildAndExpand(updatedDto.getId()).toUri();
 
         return ResponseEntity.created(location).build();
     }

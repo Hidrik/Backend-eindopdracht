@@ -38,9 +38,9 @@ public interface ComponentService {
 
     void deleteFile(Long id);
 
-    void saveFileInfo(Long id, String fileName, String url);
+    void saveFileInfo(Component component, String fileName, String url);
 
-    String deleteFileInfo(Long id);
+    String deleteFileInfo(Component component);
 
     Component toComponent(ComponentDto dto);
 

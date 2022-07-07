@@ -161,34 +161,21 @@ public class ComponentServiceImpl implements ComponentService {
     public void saveFile(Long id, MultipartFile file) {
         String fileName = file.getOriginalFilename();
         String url;
-        String oldFileName = getComponent(id).getFileName();
-        Boolean oldFileExists = false;
-        if (oldFileName != null){
-            oldFileExists = fileStorage.fileExists(oldFileName, id);
-        }
+        Component component = getComponent(id);
+        String oldFileName = component.getFileName();
 
         //First delete old- and save new file.
         try {
-            if (oldFileName != null & oldFileExists) fileStorage.delete(oldFileName, id);
+            if (oldFileName != null) fileStorage.delete(oldFileName, id);
             url = fileStorage.save(file, id);
         } catch (Exception e) {
-            throw new InternalError("Uploading file failed, cant save file: " + fileName);
+            throw new InternalFailureException("Uploading file failed, cant save file: " + fileName);
         }
-
-        //After succession -> try to save to DB.
-        try {
-            if (oldFileName != null) deleteFileInfo(id);
-            saveFileInfo(id, fileName, url);
-        } catch (Exception ex) {
-            //If writing to DB fails -> the component must be deleted.
-            fileStorage.delete(fileName, id);
-            throw new InternalError("Uploading file failed");
-        }
+        saveFileInfo(component, fileName, url);
     }
 
     @Override
-    public void saveFileInfo(Long id, String fileName, String url) {
-        Component component = getComponent(id);
+    public void saveFileInfo(Component component, String fileName, String url) {
         component.setFileName(fileName);
         component.setFileUrl(url);
         saveComponent(component);
@@ -210,7 +197,8 @@ public class ComponentServiceImpl implements ComponentService {
 
     @Override
     public void deleteFile(Long id) {
-        String fileName = deleteFileInfo(id);
+        Component component = getComponent(id);
+        String fileName = deleteFileInfo(component);
         try {
             fileStorage.delete(fileName, id);
         } catch (Exception e) {
@@ -219,8 +207,7 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public String deleteFileInfo(Long id) {
-        Component component = getComponent(id);
+    public String deleteFileInfo(Component component) {
         String fileName = component.getFileName();
         component.setFileName(null);
         component.setFileUrl(null);

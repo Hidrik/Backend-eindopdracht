@@ -11,6 +11,7 @@ Deze is ontwikkeld voor de opleiding backend developer van Novi Hogeschool.
 4. [Klaarmaken voor productie](#H4)
 5. [Start applicatie](#H5)
 6. [Endpoints](#H6)
+7. [Dependencies](#H7)
 
 ## 1. Inleiding <div id="H1"></div>
 De server is de backend van een projectbeheersysteem. De server is als RESTful API ontwikkeld.
@@ -214,6 +215,10 @@ De server is nu gestart op het volgende adres: https://localhost:8443/
 In dit hoofdstuk zijn alle endpoints te vinden. Daarbij zijn voorbeelden van te ontvangen en verzenden data gevoegd.
 De dataoverdracht gaat m.b.v. JSON objecten. De authorizatie gaat via bearer tokens. Bij alle endpoints behalve /authenticate moet
 deze token meegestuurd worden. Aan de hand hiervan wordt bepaald of het om een `USER` of `ADMIN` gaat.
+
+Inloggegevens van de standaard admin gebruiker:
+- Username: `landlust`
+- Password: `landlust`
 
 ### 6.1 Authenticatie
 - #### Login
@@ -1075,3 +1080,16 @@ deze token meegestuurd worden. Aan de hand hiervan wordt bepaald of het om een `
     "lastName": "Landlust",
     "employeeFunction": "Schoonmaker"
     }
+
+## 7. Dependencies <div id="H1"></div>
+De volgende dependencies zijn gebruikt voor deze applicatie. Hierbij
+zijn dependencies compatible met Spring Boot versie 2.7.0.
+- Spring boot starter web
+- Spring boot starter test
+- postgreSQL
+- Spring boot starter data JPA
+- jsonwebtoken
+- Spring boot starter security
+- Spring security test
+- json path
+- Spring boot starter validation

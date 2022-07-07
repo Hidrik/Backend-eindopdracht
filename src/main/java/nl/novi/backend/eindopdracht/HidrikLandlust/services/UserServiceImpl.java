@@ -3,6 +3,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.UserDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.AlreadyExistsException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.BadRequestException;
+import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.InternalFailureException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Assignment;
@@ -40,13 +41,13 @@ public class UserServiceImpl implements UserService {
         for (User user : list) {
             collection.add(toUserDto(user));
         }
-        return collection;
+        return maskPassword(collection);
     }
 
     public UserDto getUserDto(String username) {
 
         User user = getUser(username);
-        return toUserDto(user);
+        return maskPassword(toUserDto(user));
     }
 
     public UserDto createUser(UserDto userDto) {
@@ -59,8 +60,9 @@ public class UserServiceImpl implements UserService {
         if (userDto.getAccount() == null) throw new BadRequestException("No account details were added!");
 
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        User newUser = userRepository.save(toUser(userDto));
-        return toUserDto(newUser);
+        User newUser = saveUser(toUser(userDto));
+
+        return maskPassword(toUserDto(newUser));
     }
 
     public User toUser(UserDto userDto){
@@ -110,7 +112,7 @@ public class UserServiceImpl implements UserService {
             user.setUsername(newUser.getUsername());
         }
 
-        userRepository.save(user);
+        saveUser(user);
     }
 
     public boolean emailExists(String email) {
@@ -128,7 +130,7 @@ public class UserServiceImpl implements UserService {
         var dto = new UserDto();
 
         dto.setUsername(user.getUsername());
-        dto.setPassword("***********");
+        dto.setPassword(user.getPassword());
         dto.setEnabled(user.isEnabled());
         dto.setEmail(user.getEmail());
         dto.setAuthorities(user.getAuthorities());
@@ -143,18 +145,16 @@ public class UserServiceImpl implements UserService {
 
         if (authorityAlreadyExists(user, addAuthority)) throw new AlreadyExistsException(String.format("User %s already has authority %s", username, authority));
         user.addAuthority(addAuthority);
-        userRepository.save(user);
+        saveUser(user);
     }
 
     public boolean authorityAlreadyExists(User user, Authority addedAuthority) {
-        boolean returnValue = false;
         for (Authority currentAuthority : user.getAuthorities()) {
             if (currentAuthority.getAuthority().equals(addedAuthority.getAuthority())) {
-                returnValue = true;
-                break;
+                return true;
             }
         }
-        return returnValue;
+        return false;
     }
 
     public void removeAuthority(String username, String authority) {
@@ -166,7 +166,7 @@ public class UserServiceImpl implements UserService {
             throw new RecordNotFoundException(String.format("User %s does not have authority %s.", username, authority));
         }
 
-        userRepository.save(user);
+        saveUser(user);
     }
 
     @Override
@@ -179,8 +179,25 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsById(username);
     }
 
-    public String maskPassword() {
-        return "**********";
+    public List<UserDto> maskPassword(List<UserDto> dtos) {
+        for (UserDto dto : dtos) {
+            dto.setPassword("*****");
+        }
+        return dtos;
     }
 
+    @Override
+    public UserDto maskPassword(UserDto dto) {
+        dto.setPassword("*****");
+        return dto;
+    }
+
+    @Override
+    public User saveUser(User user) {
+        try {
+            return userRepository.save(user);
+        } catch (Exception e) {
+            throw new InternalFailureException(String.format("Can not save user %s", user.getUsername()));
+        }
+    }
 }

@@ -47,8 +47,6 @@ public class UserController {
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{username}")
                 .buildAndExpand(newUser.getUsername()).toUri();
 
-        newUser.setPassword(userService.maskPassword());
-
         return ResponseEntity.created(location).body(newUser);
     }
 
@@ -84,5 +82,7 @@ public class UserController {
         userService.removeAuthority(username, authorityName);
         return ResponseEntity.accepted().build();
     }
+
+
 
 }
