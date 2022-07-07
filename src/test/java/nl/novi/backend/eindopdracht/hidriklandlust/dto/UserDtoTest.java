@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest
-public class UserDtoTest {
+class UserDtoTest {
     private final UserDto generatedUser = generateUserDto();
     //Generate standard UserDTO, set in tests and get that data
     //Original data isn't the same as the set data
