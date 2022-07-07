@@ -1,8 +1,10 @@
 #Instalatiehandleiding
+
 In deze repository is de backend spring boot server van Hidrik Landlust te vinden.
 Deze is ontwikkeld voor de opleiding backend developer van Novi Hogeschool.
 
 ##Inhoudsopgave
+
 1. [Inleiding](#H1)
 2. [Benodige programma's](#H2)
 3. [Installatie instructie](#H3)
