@@ -75,8 +75,8 @@ public class AssignmentControllerTest {
     @Test
     @WithMockUser(roles=admin) //For authorisation
     void getAllAssignmentsAuthorizedAdminSucceeds() throws Exception {
-        List<AssignmentDto> dtos = new ArrayList<>();
-        AssignmentDto dto = generateAssignmentDto();
+        List<AssignmentSummaryDto> dtos = new ArrayList<>();
+        AssignmentSummaryDto dto = generateAssignmentSummaryDto();
         dtos.add(dto);
 
         when(assignmentService.getAllAssignmentsDto()).thenReturn(dtos);
@@ -90,12 +90,6 @@ public class AssignmentControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath(
                         "$.[0].id", is(dto.getId().intValue())))
                 .andExpect(MockMvcResultMatchers.jsonPath(
-                        "$.[0].amountOfComponentById", is(dto.getAmountOfComponentById())))
-                .andExpect(MockMvcResultMatchers.jsonPath(
-                        "$.[0].budget", is(dto.getBudget())))
-                .andExpect(MockMvcResultMatchers.jsonPath(
-                        "$.[0].description", is(dto.getDescription())))
-                .andExpect(MockMvcResultMatchers.jsonPath(
                         "$.[0].descriptionFinishedWork", is(dto.getDescriptionFinishedWork())))
                 .andExpect(MockMvcResultMatchers.jsonPath(
                         "$.[0].hoursWorked", is(dto.getHoursWorked().intValue())))
@@ -106,8 +100,8 @@ public class AssignmentControllerTest {
     @Test
     @WithMockUser(roles=user) //For authorisation
     void getAllAssignmentsAuthorizedUserSucceeds() throws Exception {
-        List<AssignmentDto> dtos = new ArrayList<>();
-        AssignmentDto dto = generateAssignmentDto();
+        List<AssignmentSummaryDto> dtos = new ArrayList<>();
+        AssignmentSummaryDto dto = generateAssignmentSummaryDto();
         dtos.add(dto);
 
         when(assignmentService.getAllAssignmentsDto()).thenReturn(dtos);
@@ -118,9 +112,6 @@ public class AssignmentControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].assignmentCode", is(dto.getAssignmentCode())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].id", is(dto.getId().intValue())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].amountOfComponentById", is(dto.getAmountOfComponentById())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].budget", is(dto.getBudget())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].description", is(dto.getDescription())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].descriptionFinishedWork", is(dto.getDescriptionFinishedWork())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].hoursWorked", is(dto.getHoursWorked().intValue())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].progressPercentage", is(dto.getProgressPercentage().intValue())));

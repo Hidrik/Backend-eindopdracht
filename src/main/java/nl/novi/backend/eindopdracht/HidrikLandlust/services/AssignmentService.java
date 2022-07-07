@@ -10,7 +10,7 @@ import java.util.List;
 @Service
 public interface AssignmentService {
 
-    List<AssignmentDto> getAllAssignmentsDto();
+    List<AssignmentSummaryDto> getAllAssignmentsDto();
 
     Assignment getAssignment(Long id);
 

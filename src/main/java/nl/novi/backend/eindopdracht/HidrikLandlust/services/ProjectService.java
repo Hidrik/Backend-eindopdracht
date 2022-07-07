@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 public interface ProjectService {
 
-    List<ProjectDto> getProjectsDto();
+    List<ProjectSummaryDto> getProjectsDto();
 
     ProjectDto getProjectDto(Long id);
 

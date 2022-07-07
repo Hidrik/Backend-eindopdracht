@@ -3,6 +3,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.*;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.*;
+import org.springframework.security.core.parameters.P;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -80,8 +81,8 @@ public class TestUtils {
         dto.setEmployeeFunction("Tester");
         dto.setId(1L);
 
-        Set<Project> projects = new HashSet<>();
-        Project project = generateProject();
+        Set<ProjectSummaryDto> projects = new HashSet<>();
+        ProjectSummaryDto project = generateProjectSummaryDto();
         projects.add(project);
         dto.setProjects(projects);
 
@@ -90,6 +91,18 @@ public class TestUtils {
         assignments.add(assignment);
         dto.setAssignments(assignments);
 
+        return dto;
+    }
+
+    private static ProjectSummaryDto generateProjectSummaryDto() {
+        ProjectSummaryDto dto = new ProjectSummaryDto();
+        dto.setId(1L);
+        dto.setBudget(1000);
+        dto.setCosts(100);
+        dto.setProgressPercentage((byte) 50);
+        dto.setDeadline(LocalDate.of(2022, 12, 31));
+        dto.setProjectCode("test-test");
+        dto.setDescription("test test test test");
         return dto;
     }
 
@@ -103,9 +116,7 @@ public class TestUtils {
         project.setCosts(100);
         project.setUpdatedOn(new Date());
         project.setCreatedOn(new Date(100));
-
-        LocalDate deadline = LocalDate.of(2022, 12, 31);
-        project.setDeadline(deadline);
+        project.setDeadline(LocalDate.of(2022, 12, 31));
 
         return project;
     }

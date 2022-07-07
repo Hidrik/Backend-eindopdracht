@@ -186,7 +186,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         Assignment assignment = getAssignment(assignmentId);
 
         Integer currentAmount = assignment.getAmountOfComponentById().get(componentId);
-
+        if (currentAmount == null) throw new BadRequestException(String.format("Assignment %s has no component %s", assignmentId, componentId));
         assignment.setAmountOfComponentById(componentId, currentAmount - amount);
         if (currentAmount - amount <= 0) {
             Component component = componentService.removeComponentFromAssignment(assignment, componentId, amount);
@@ -201,6 +201,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     public AssignmentDto addAccountToAssignment(Long assignmentId, Long accountId) {
         Assignment assignment = getAssignment(assignmentId);
+        if (assignment.getAccount() != null) throw new BadRequestException(String.format("Assignment %s already has an user assigned!", assignmentId));
         Account account = accountService.getAccount(accountId);
 
         account.addAssignment(assignment);
@@ -213,10 +214,10 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
-    public List<AssignmentDto> getAllAssignmentsDto() {
-        List<AssignmentDto> dtos = new ArrayList<>();
+    public List<AssignmentSummaryDto> getAllAssignmentsDto() {
+        List<AssignmentSummaryDto> dtos = new ArrayList<>();
         for (Assignment ass: assignmentRepository.findAll()){
-            dtos.add(toAssignmentDto(ass));
+            dtos.add(toAssignmentSummaryDto(ass));
         }
         return dtos;
     }

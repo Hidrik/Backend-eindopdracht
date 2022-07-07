@@ -71,7 +71,7 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getAuthorities(username));
     }
 
-    @PostMapping(value = "/{username}/authorities")
+    @PutMapping(value = "/{username}/authorities")
     public ResponseEntity<Object> addUserAuthority(@PathVariable("username") String username, @RequestBody Map<String, Object> fields) {
         String authorityName = (String) fields.get("authority");
         userService.addAuthority(username, authorityName);
@@ -82,7 +82,7 @@ public class UserController {
     public ResponseEntity<Object> deleteUserAuthority(@PathVariable("username") String username, @RequestBody Map<String, Object> fields) {
         String authorityName = (String) fields.get("authority");
         userService.removeAuthority(username, authorityName);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.accepted().build();
     }
 
 }

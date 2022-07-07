@@ -2,6 +2,7 @@ package nl.novi.backend.eindopdracht.HidrikLandlust.services;
 
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.dto.AccountSummaryDto;
+import nl.novi.backend.eindopdracht.HidrikLandlust.dto.ProjectSummaryDto;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.InternalFailureException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.HidrikLandlust.models.entities.Account;
@@ -11,15 +12,15 @@ import nl.novi.backend.eindopdracht.HidrikLandlust.repositories.AccountRepositor
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class AccountServiceImpl implements AccountService {
 
     @Autowired
     AccountRepository accountRepository;
+
+    ProjectService projectService = new ProjectServiceImpl();
 
     @Override
     public AccountDto getAccountDto(Long id) {
@@ -35,12 +36,20 @@ public class AccountServiceImpl implements AccountService {
         dto.setLastName(account.getLastName());
         dto.setEmployeeFunction(account.getEmployeeFunction());
         dto.setAssignments(account.getAssignments());
-        dto.setProjects(account.getProjects());
         dto.setCity(account.getCity());
         dto.setPostalCode(account.getPostalCode());
         dto.setHouseNumber(account.getHouseNumber());
         dto.setCity(account.getCity());
         dto.setStreetName(account.getStreetName());
+
+        if (account.getProjects() != null) {
+            Set<ProjectSummaryDto> dtos = new HashSet<>();
+            for (Project project : account.getProjects()) {
+                dtos.add(projectService.toProjectSummaryDto(project));
+            }
+            dto.setProjects(dtos);
+        }
+
         return dto;
     }
 
@@ -139,8 +148,8 @@ public class AccountServiceImpl implements AccountService {
             account.addAssignment(assignment);
         }
 
-        for (Project project : dto.getProjects()) {
-            account.addProject(project);
+        for (ProjectSummaryDto project : dto.getProjects()) {
+            account.addProject(projectService.toProject(project));
         }
 
         return account;

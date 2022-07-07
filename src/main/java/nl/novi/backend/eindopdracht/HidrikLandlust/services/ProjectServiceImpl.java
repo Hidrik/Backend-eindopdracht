@@ -31,12 +31,12 @@ public class ProjectServiceImpl implements ProjectService {
     private final AssignmentService assignmentService = new AssignmentServiceImpl();
 
     @Override
-    public List<ProjectDto> getProjectsDto() {
+    public List<ProjectSummaryDto> getProjectsDto() {
         List<Project> projects = projectRepository.findAll();
-        List<ProjectDto> projectDtos = new ArrayList<>();
+        List<ProjectSummaryDto> projectDtos = new ArrayList<>();
         for (Project project: projects) {
             project.setCosts(calculateCosts(project));
-            projectDtos.add(toProjectDto(project));
+            projectDtos.add(toProjectSummaryDto(project));
         }
         return projectDtos;
     }
