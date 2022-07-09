@@ -60,7 +60,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         if (summaryDto.getProgressPercentage() == null || summaryDto.getProgressPercentage() <= 0) {
             throw new BadRequestException("Progress percentage can not be 0");
         }
-        if (summaryDto.getDescriptionFinishedWork() == null || summaryDto.getDescriptionFinishedWork().length() <= 0){
+        if (summaryDto.getDescriptionFinishedWork() == null || summaryDto.getDescriptionFinishedWork().length() <= 0) {
             throw new BadRequestException("Must add description of finished work");
         }
 
@@ -90,22 +90,20 @@ public class AssignmentServiceImpl implements AssignmentService {
         return oldDescription + newDescription;
     }
 
-    @Override
-    public AssignmentSummaryDto toAssignmentSummaryDto(Assignment ass) {
-        AssignmentSummaryDto dto = new AssignmentSummaryDto();
-        dto.setId(ass.getId());
-        dto.setHoursWorked(ass.getHoursWorked());
-        dto.setDescriptionFinishedWork(ass.getDescriptionFinishedWork());
-        dto.setAssignmentCode(ass.getAssignmentCode());
-        dto.setProgressPercentage(ass.getProgressPercentage());
-        return dto;
-    }
-
     public void deleteAssignment(Long assignmentId) {
-        Assignment ass = getAssignment(assignmentId);
-        Project project = ass.getProject();
-        project.removeAssignment(ass);
+        //External because of exception throws. getAssignment could throw RecordNotFoundException and if this is in
+        // the try-catch block, it would always throw InternalFailureException.
+        Assignment assignment = getAssignment(assignmentId);
+        Project project = projectService.getProjectFromProjectCode(assignment.getProject().getProjectCode());
+        project.removeAssignment(assignment);
         projectService.saveProject(project);
+        try {
+            assignmentRepository.delete(assignment);
+        } catch (Exception e) {
+            throw new InternalFailureException(String.format("Can not delete assignment %s", assignmentId));
+        }
+
+
     }
 
     @Override
@@ -131,8 +129,8 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     public String generateAssignmentCode(String projectCode) {
         int i = 0;
-        while(true) {
-            i ++;
+        while (true) {
+            i++;
             if (!assignmentCodeExists(projectCode + "-" + i)) break;
         }
         return projectCode + "-" + i;
@@ -186,7 +184,8 @@ public class AssignmentServiceImpl implements AssignmentService {
         Assignment assignment = getAssignment(assignmentId);
 
         Integer currentAmount = assignment.getAmountOfComponentById().get(componentId);
-        if (currentAmount == null) throw new BadRequestException(String.format("Assignment %s has no component %s", assignmentId, componentId));
+        if (currentAmount == null)
+            throw new BadRequestException(String.format("Assignment %s has no component %s", assignmentId, componentId));
         assignment.setAmountOfComponentById(componentId, currentAmount - amount);
         if (currentAmount - amount <= 0) {
             Component component = componentService.removeComponentFromAssignment(assignment, componentId, amount);
@@ -201,7 +200,8 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     public AssignmentDto addAccountToAssignment(Long assignmentId, Long accountId) {
         Assignment assignment = getAssignment(assignmentId);
-        if (assignment.getAccount() != null) throw new BadRequestException(String.format("Assignment %s already has an user assigned!", assignmentId));
+        if (assignment.getAccount() != null)
+            throw new BadRequestException(String.format("Assignment %s already has an user assigned!", assignmentId));
         Account account = accountService.getAccount(accountId);
 
         account.addAssignment(assignment);
@@ -211,15 +211,6 @@ public class AssignmentServiceImpl implements AssignmentService {
         Assignment savedAssignment = saveAssignment(assignment);
 
         return toAssignmentDto(savedAssignment);
-    }
-
-    @Override
-    public List<AssignmentSummaryDto> getAllAssignmentsDto() {
-        List<AssignmentSummaryDto> dtos = new ArrayList<>();
-        for (Assignment ass: assignmentRepository.findAll()){
-            dtos.add(toAssignmentSummaryDto(ass));
-        }
-        return dtos;
     }
 
     @Override
@@ -248,6 +239,26 @@ public class AssignmentServiceImpl implements AssignmentService {
             }
         }
 
+        return dto;
+    }
+
+    @Override
+    public List<AssignmentSummaryDto> getAllAssignmentsDto() {
+        List<AssignmentSummaryDto> dtos = new ArrayList<>();
+        for (Assignment ass : assignmentRepository.findAll()) {
+            dtos.add(toAssignmentSummaryDto(ass));
+        }
+        return dtos;
+    }
+
+    @Override
+    public AssignmentSummaryDto toAssignmentSummaryDto(Assignment ass) {
+        AssignmentSummaryDto dto = new AssignmentSummaryDto();
+        dto.setId(ass.getId());
+        dto.setHoursWorked(ass.getHoursWorked());
+        dto.setDescriptionFinishedWork(ass.getDescriptionFinishedWork());
+        dto.setAssignmentCode(ass.getAssignmentCode());
+        dto.setProgressPercentage(ass.getProgressPercentage());
         return dto;
     }
 

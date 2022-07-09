@@ -37,6 +37,7 @@ public interface UserService {
     boolean emailExists(String email);
 
     List<UserDto> maskPassword(List<UserDto> dtos);
+
     UserDto maskPassword(UserDto dto);
 
     UserDto toUserDto(User user);

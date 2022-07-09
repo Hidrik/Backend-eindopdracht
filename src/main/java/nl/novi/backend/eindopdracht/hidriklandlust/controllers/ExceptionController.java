@@ -1,7 +1,6 @@
 package nl.novi.backend.eindopdracht.hidriklandlust.controllers;
 
 
-
 import nl.novi.backend.eindopdracht.hidriklandlust.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

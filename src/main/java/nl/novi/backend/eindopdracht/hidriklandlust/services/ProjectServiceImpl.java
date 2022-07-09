@@ -34,7 +34,7 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectSummaryDto> getProjectsDto() {
         List<Project> projects = projectRepository.findAll();
         List<ProjectSummaryDto> projectDtos = new ArrayList<>();
-        for (Project project: projects) {
+        for (Project project : projects) {
             project.setCosts(calculateCosts(project));
             projectDtos.add(toProjectSummaryDto(project));
         }
@@ -44,7 +44,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectDto getProjectDto(Long id) {
         Optional<Project> optionalProject = projectRepository.findById(id);
-        if (optionalProject.isPresent()){
+        if (optionalProject.isPresent()) {
 
             Project project = optionalProject.get();
             project.setCosts(calculateCosts(project));
@@ -59,7 +59,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (projectCodeExists(dto)) {
             throw new AlreadyExistsException("Project with " + dto.getProjectCode() + " already exists.");
         }
-        if (checkDeadlineNotInPast(dto.getDeadline())) {
+        if (deadlineNotInPast(dto.getDeadline())) {
             throw new DateLiesInPastException("Deadline " + dto.getDeadline() + " can not lie in the past.");
         }
         Project project = toProject(dto);
@@ -68,7 +68,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setProgressPercentage((byte) 0);
         project.setCosts(0);
         Project savedProject = saveProject(project);
-            return (toProjectSummaryDto(savedProject));
+        return (toProjectSummaryDto(savedProject));
     }
 
     public boolean projectCodeExists(ProjectDto dto) {
@@ -76,7 +76,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public boolean checkDeadlineNotInPast(LocalDate date) {
+    public boolean deadlineNotInPast(LocalDate date) {
         LocalDate currentDate =
                 new Date(System.currentTimeMillis()).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         return currentDate.isAfter(date);
@@ -133,11 +133,21 @@ public class ProjectServiceImpl implements ProjectService {
 
         Project project = getProjectFromProjectCode(projectCode);
 
-        if (dto.getDeadline() != null) {project.setDeadline(dto.getDeadline());}
-        if (dto.getBudget() != null) {project.setBudget(dto.getBudget());}
-        if (dto.getDescription() != null) {project.setDescription(dto.getDescription());}
-        if (dto.getProjectCode() != null) {project.setProjectCode(dto.getProjectCode());}
-        if (dto.getProgressPercentage() != null) {project.setProgressPercentage(dto.getProgressPercentage());}
+        if (dto.getDeadline() != null) {
+            project.setDeadline(dto.getDeadline());
+        }
+        if (dto.getBudget() != null) {
+            project.setBudget(dto.getBudget());
+        }
+        if (dto.getDescription() != null) {
+            project.setDescription(dto.getDescription());
+        }
+        if (dto.getProjectCode() != null) {
+            project.setProjectCode(dto.getProjectCode());
+        }
+        if (dto.getProgressPercentage() != null) {
+            project.setProgressPercentage(dto.getProgressPercentage());
+        }
         return toProjectDto(saveProject(project));
     }
 
@@ -147,7 +157,7 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = getProjectFromProjectCode(projectCode);
         Account account = accountService.getAccount(accountId);
 
-        if (! project.getAccounts().contains(account)) {
+        if (!project.getAccounts().contains(account)) {
             project.addAccount(account);
             Project savedProject = saveProject(project);
             return toProjectDto(savedProject);
@@ -168,7 +178,7 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setId(project.getId());
         dto.setCosts(project.getCosts());
 
-        if (project.getAccounts().size() > 0) {
+        if (!project.getAccounts().isEmpty()) {
             Set<AccountSummaryDto> accountSummaryDtos = new HashSet<>();
             for (Account acc : project.getAccounts()) {
                 accountSummaryDtos.add(accountService.toAccountSummaryDto(acc));
@@ -206,7 +216,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setCosts(calculateCosts(project));
         try {
             return projectRepository.save(project);
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new InternalFailureException("Can not save project to database");
         }
     }
@@ -216,7 +226,7 @@ public class ProjectServiceImpl implements ProjectService {
         Account account = accountService.getAccount(accountId);
         Set<Project> projects = account.getProjects();
 
-        if (projects.size() > 0) {
+        if (!projects.isEmpty()) {
             for (Project project : projects) {
                 project.removeAccount(account);
             }
@@ -227,8 +237,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void deleteProject(String projectCode) {
+        Project project = getProjectFromProjectCode(projectCode);
         try {
-            projectRepository.delete(getProjectFromProjectCode(projectCode));
+            projectRepository.delete(project);
         } catch (Exception e) {
             throw new InternalFailureException("Can not delete project from database");
         }
@@ -236,7 +247,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Project getProjectFromProjectCode(String projectCode){
+    public Project getProjectFromProjectCode(String projectCode) {
         Optional<Project> optionalProject = projectRepository.findByProjectCode(projectCode);
         if (optionalProject.isPresent()) {
             Project project = optionalProject.get();
@@ -250,7 +261,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public Integer calculateCosts(Project project) {
         Integer totalCost = 0;
-        for (Assignment ass: project.getAssignments()) {
+        for (Assignment ass : project.getAssignments()) {
             if (ass.getCosts() != null) totalCost += ass.getCosts();
         }
         return totalCost;

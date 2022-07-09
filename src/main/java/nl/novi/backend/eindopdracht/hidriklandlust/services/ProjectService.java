@@ -33,7 +33,7 @@ public interface ProjectService {
 
     boolean projectCodeExists(ProjectDto dto);
 
-    boolean checkDeadlineNotInPast(LocalDate date);
+    boolean deadlineNotInPast(LocalDate date);
 
     Integer calculateCosts(Project project);
 

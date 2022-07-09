@@ -46,6 +46,7 @@ public class Account {
             targetEntity = Assignment.class,
             cascade = CascadeType.ALL,
             fetch = FetchType.EAGER)
+    @JoinColumn(name = "account_id")
     Set<Assignment> assignments = new HashSet<>();
 
     @OneToOne(mappedBy = "account")
@@ -78,6 +79,7 @@ public class Account {
     public String getFirstName() {
         return firstName;
     }
+
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
@@ -85,6 +87,7 @@ public class Account {
     public String getLastName() {
         return lastName;
     }
+
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
@@ -92,6 +95,7 @@ public class Account {
     public String getEmployeeFunction() {
         return employeeFunction;
     }
+
     public void setEmployeeFunction(String employeeFunction) {
         this.employeeFunction = employeeFunction;
     }
@@ -99,6 +103,7 @@ public class Account {
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -135,10 +140,14 @@ public class Account {
         this.city = city;
     }
 
-    public Set<Project> getProjects() {return this.projects;}
+    public Set<Project> getProjects() {
+        return this.projects;
+    }
+
     public void addProject(Project project) {
         this.projects.add(project);
     }
+
     public void removeProject(Project project) {
         this.projects.remove(project);
     }
@@ -147,10 +156,14 @@ public class Account {
         this.projects = projects;
     }
 
-    public Set<Assignment> getAssignments() {return this.assignments;}
+    public Set<Assignment> getAssignments() {
+        return this.assignments;
+    }
+
     public void addAssignment(Assignment assignment) {
         this.assignments.add(assignment);
     }
+
     public void removeAssignment(Assignment assignment) {
         this.assignments.remove(assignment);
     }

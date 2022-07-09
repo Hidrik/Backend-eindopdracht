@@ -78,7 +78,7 @@ public class ProjectController {
     }
 
     @PutMapping(value = "/{projectCode}/accounts/{accountId}")
-    public ResponseEntity<ProjectDto> addAccountToProject(@PathVariable("projectCode") String projectCode, @PathVariable("accountId")  Long accountId) {
+    public ResponseEntity<ProjectDto> addAccountToProject(@PathVariable("projectCode") String projectCode, @PathVariable("accountId") Long accountId) {
         ProjectDto dto = projectService.addAccountToProject(projectCode, accountId);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/users/{projectCode}")
@@ -88,7 +88,7 @@ public class ProjectController {
     }
 
     @DeleteMapping(value = "/{projectCode}/accounts/{accountId}")
-    public ResponseEntity<ProjectDto> removeAccountFromProject(@PathVariable("projectCode") String projectCode, @PathVariable("accountId")  Long accountId) {
+    public ResponseEntity<ProjectDto> removeAccountFromProject(@PathVariable("projectCode") String projectCode, @PathVariable("accountId") Long accountId) {
         projectService.removeAccountFromProject(projectCode, accountId);
 
         return ResponseEntity.ok().build();

@@ -72,12 +72,20 @@ class AccountControllerTest {
 
     @Test
     @WithMockUser(roles=user) //For authorisation
-    void getAllAccountsAsUserFailsTest() throws Exception {
+    void getAllAccountsAsUserSucceeds() throws Exception {
+        List<AccountSummaryDto> dtos  = new ArrayList<>();
+        AccountSummaryDto dto = generateAccountSummaryDto();
+        dtos.add(dto);
+
+        when(accountService.getAccountsSummaryDto()).thenReturn(dtos);
 
         mockMvc
                 .perform(MockMvcRequestBuilders.get("/accounts"))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isForbidden());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].lastName", is(dto.getLastName())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].firstName", is(dto.getFirstName())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].employeeFunction", is(dto.getEmployeeFunction())));
     }
 
     @Test

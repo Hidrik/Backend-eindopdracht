@@ -9,7 +9,6 @@ import nl.novi.backend.eindopdracht.hidriklandlust.models.entities.Assignment;
 import nl.novi.backend.eindopdracht.hidriklandlust.models.entities.Component;
 import nl.novi.backend.eindopdracht.hidriklandlust.repositories.ComponentRepository;
 import nl.novi.backend.eindopdracht.hidriklandlust.utils.FileStorage;
-import nl.novi.backend.eindopdracht.hidriklandlust.utils.FileStorageImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -22,21 +21,22 @@ public class ComponentServiceImpl implements ComponentService {
     @Autowired
     ComponentRepository componentRepository;
 
-    private final FileStorage fileStorage = new FileStorageImpl();
+    @Autowired
+    FileStorage fileStorage;
 
     //Not autowired because of infinite recursion
     private final AssignmentService assignmentService = new AssignmentServiceImpl();
 
     @Override
-    public List<ComponentDto> getComponentsDto() {
+    public List<ComponentSummaryDto> getComponentsDto() {
         List<Component> components = componentRepository.findAll();
-        return toComponentDtos(components);
+        return toComponentSummaryDto(components);
     }
 
     @Override
     public List<ComponentDto> toComponentDtos(List<Component> components) {
         List<ComponentDto> dtos = new ArrayList<>();
-        for (Component comp: components) {
+        for (Component comp : components) {
             dtos.add(toComponentDto(comp));
         }
         return dtos;
@@ -76,9 +76,9 @@ public class ComponentServiceImpl implements ComponentService {
 
         if (dto.getAssignments() == null) return comp;
 
-        for (AssignmentSummaryDto ass : dto.getAssignments()) {
+        for (AssignmentSummaryDto assignmentDto : dto.getAssignments()) {
 
-            comp.addAssignment(assignmentService.toAssignment(ass));
+            comp.addAssignment(assignmentService.toAssignment(assignmentDto));
         }
         return comp;
     }
@@ -87,15 +87,15 @@ public class ComponentServiceImpl implements ComponentService {
     public ComponentDto updateComponent(Long id, ComponentDto dto) {
         Component comp = getComponent(id);
 
-        if (dto.getFileUrl() != null)        comp.setFileUrl(dto.getFileUrl());
-        if (dto.getFileName() != null)       comp.setFileName(dto.getFileName());
-        if (dto.getOrderLink() != null)      comp.setOrderLink(dto.getOrderLink());
-        if (dto.getArticleNumber() != null)  comp.setArticleNumber(dto.getArticleNumber());
-        if (dto.getPrice() != null)          comp.setPrice(dto.getPrice());
-        if (dto.getId() != null)             comp.setId(dto.getId());
-        if (dto.getStock() != null)          comp.setStock(dto.getStock());
-        if (dto.getManufacturer() != null)   comp.setManufacturer(dto.getManufacturer());
-        if (dto.getDescription() != null)    comp.setDescription(dto.getDescription());
+        if (dto.getFileUrl() != null) comp.setFileUrl(dto.getFileUrl());
+        if (dto.getFileName() != null) comp.setFileName(dto.getFileName());
+        if (dto.getOrderLink() != null) comp.setOrderLink(dto.getOrderLink());
+        if (dto.getArticleNumber() != null) comp.setArticleNumber(dto.getArticleNumber());
+        if (dto.getPrice() != null) comp.setPrice(dto.getPrice());
+        if (dto.getId() != null) comp.setId(dto.getId());
+        if (dto.getStock() != null) comp.setStock(dto.getStock());
+        if (dto.getManufacturer() != null) comp.setManufacturer(dto.getManufacturer());
+        if (dto.getDescription() != null) comp.setDescription(dto.getDescription());
 
         Component savedComponent = saveComponent(comp);
 
@@ -158,7 +158,7 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public void saveFile(Long id, MultipartFile file) {
+    public String saveFile(Long id, MultipartFile file) {
         String fileName = file.getOriginalFilename();
         String url;
         Component component = getComponent(id);
@@ -172,6 +172,7 @@ public class ComponentServiceImpl implements ComponentService {
             throw new InternalFailureException("Uploading file failed, cant save file: " + fileName);
         }
         saveFileInfo(component, fileName, url);
+        return url;
     }
 
     @Override
@@ -184,21 +185,22 @@ public class ComponentServiceImpl implements ComponentService {
     @Override
     public Resource loadFile(Long id) {
         String fileName = getComponent(id).getFileName();
+        if (fileName == null) throw new RecordNotFoundException("Component with id " + id + " has no file attached.");
+
         try {
             return fileStorage.load(fileName, id);
         } catch (Exception e) {
-            if (fileName == null) {
-                throw new RecordNotFoundException("Component with id " + id + " has no file attached.");
-            } else {
-                throw new InternalFailureException("Cant load file " + fileName);
-            }
+            throw new InternalFailureException("Cant load file " + fileName);
+
         }
     }
 
     @Override
     public void deleteFile(Long id) {
         Component component = getComponent(id);
-        String fileName = deleteFileInfo(component);
+        String fileName = component.getFileName();
+        if (fileName == null) throw new RecordNotFoundException(String.format("Component %s has no file attached.", id));
+        deleteFileInfo(component);
         try {
             fileStorage.delete(fileName, id);
         } catch (Exception e) {
@@ -239,6 +241,15 @@ public class ComponentServiceImpl implements ComponentService {
         } else {
             throw new RecordNotFoundException("Cant find component with id " + id);
         }
+    }
+
+    @Override
+    public List<ComponentSummaryDto> toComponentSummaryDto(List<Component> components) {
+        List<ComponentSummaryDto> dtos = new ArrayList<>();
+        for (Component component : components) {
+            dtos.add(toComponentSummaryDto(component));
+        }
+        return dtos;
     }
 
     @Override

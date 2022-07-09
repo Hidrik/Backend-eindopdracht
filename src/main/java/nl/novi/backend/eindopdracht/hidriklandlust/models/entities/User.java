@@ -26,10 +26,10 @@ public class User {
     @JsonIgnore
     @OneToMany(
             targetEntity = Authority.class,
-            mappedBy = "username",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER)
+    @JoinColumn(name = "username", nullable = false, insertable = false, updatable = false)
     private final Set<Authority> authorities = new HashSet<>();
 
     @OneToOne(
@@ -40,7 +40,10 @@ public class User {
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     private Account account;
 
-    public String getUsername() { return username; }
+    public String getUsername() {
+        return username;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -48,16 +51,23 @@ public class User {
     public String getPassword() {
         return password;
     }
+
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public boolean isEnabled() { return enabled;}
-    public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public Account getAccount() {
         return account;
     }
+
     public void setAccount(Account account) {
         this.account = account;
     }
@@ -65,19 +75,22 @@ public class User {
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
 
-    public Set<Authority> getAuthorities() { return authorities; }
+    public Set<Authority> getAuthorities() {
+        return authorities;
+    }
+
     public void addAuthority(Authority authority) {
         this.authorities.add(authority);
     }
+
     public void removeAuthority(Authority authority) {
         this.authorities.remove(authority);
     }
-
-
 
 
 }

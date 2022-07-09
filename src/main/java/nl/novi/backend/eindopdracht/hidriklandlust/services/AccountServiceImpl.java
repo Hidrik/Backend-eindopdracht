@@ -22,6 +22,7 @@ public class AccountServiceImpl implements AccountService {
 
     ProjectService projectService = new ProjectServiceImpl();
 
+
     @Override
     public AccountDto getAccountDto(Long id) {
         return toAccountDto(getAccount(id));
@@ -62,7 +63,7 @@ public class AccountServiceImpl implements AccountService {
     public List<AccountSummaryDto> getAccountsSummaryDto() {
         List<AccountSummaryDto> dtos = new ArrayList<>();
         List<Account> accounts = getAccounts();
-        if (accounts.size() > 0) {
+        if (!accounts.isEmpty()) {
             for (Account account : accounts) {
                 dtos.add(toAccountSummaryDto(account));
             }
@@ -105,7 +106,7 @@ public class AccountServiceImpl implements AccountService {
         Account account = getAccount(id);
         try {
             accountRepository.delete(account);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new InternalFailureException(String.format("Can not delete account with id %s", id));
         }
 

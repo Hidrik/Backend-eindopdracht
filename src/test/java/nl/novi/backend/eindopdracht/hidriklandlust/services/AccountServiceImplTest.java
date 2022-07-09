@@ -152,13 +152,8 @@ class AccountServiceImplTest {
         Account account = generateAccount();
         Optional<Account> optionalAccount = Optional.of(account);
 
-        Account updatedAccount = generateAccount();
-        updatedAccount.setEmployeeFunction(dto.getEmployeeFunction());
-        updatedAccount.setFirstName(dto.getFirstName());
-        updatedAccount.setLastName(dto.getLastName());
-
         when(accountRepository.findById(any(Long.class))).thenReturn(optionalAccount);
-        when(accountRepository.save(any(Account.class))).thenReturn(updatedAccount);
+        when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArguments()[0]);
 
         assertThat(accountService.updateAccount(dto.getId(), dto))
                 .usingRecursiveComparison()
@@ -177,7 +172,7 @@ class AccountServiceImplTest {
         dto.setLastName(null);
 
         when(accountRepository.findById(any(Long.class))).thenReturn(optionalAccount);
-        when(accountRepository.save(any(Account.class))).thenReturn(account);
+        when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArguments()[0]);
 
         assertThat(accountService.updateAccount(dto.getId(), dto))
                 .usingRecursiveComparison()
@@ -226,7 +221,7 @@ class AccountServiceImplTest {
         Optional<Account> optionalAccount = Optional.of(account);
 
         when(accountRepository.findById(any(Long.class))).thenReturn(optionalAccount);
-        when(accountRepository.save(any(Account.class))).thenReturn(account);
+        when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArguments()[0]);
 
         assertDoesNotThrow(() -> accountService.removeAssignmentFromAccount(assignment, account.getId()));
     }

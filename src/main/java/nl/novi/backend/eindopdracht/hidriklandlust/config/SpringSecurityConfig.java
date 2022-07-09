@@ -1,4 +1,5 @@
 package nl.novi.backend.eindopdracht.hidriklandlust.config;
+
 import nl.novi.backend.eindopdracht.hidriklandlust.filter.JwtRequestFilter;
 import nl.novi.backend.eindopdracht.hidriklandlust.services.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,6 @@ import javax.sql.DataSource;
 @EnableWebSecurity
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    /*autowire customUserDetailService en jwtRequestFilter*/
     @Autowired
     JwtRequestFilter jwtRequestFilter;
 
@@ -56,15 +56,15 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 //UserController endpoints
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
-                .antMatchers(HttpMethod.GET,"/users").hasRole("ADMIN")
-                .antMatchers(HttpMethod.GET,"/users/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.PUT,"/users/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.DELETE,"/users/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.PUT,"/users/**/authorities").hasRole("ADMIN")
-                .antMatchers(HttpMethod.DELETE,"/users/**/authorities").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/users/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/users/**/authorities").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/users/**/authorities").hasRole("ADMIN")
                 //AuthenticationController endpoints
-                .antMatchers(HttpMethod.POST,"/authenticate").permitAll()
-                .antMatchers(HttpMethod.GET,"/authenticated").authenticated()
+                .antMatchers(HttpMethod.POST, "/authenticate").permitAll()
+                .antMatchers(HttpMethod.GET, "/authenticated").authenticated()
                 //ProjectController endpoints
                 .antMatchers(HttpMethod.GET, "/projects").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.POST, "/projects").hasRole("ADMIN")

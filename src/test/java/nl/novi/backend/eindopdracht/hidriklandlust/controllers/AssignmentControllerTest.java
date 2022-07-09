@@ -207,7 +207,7 @@ class AssignmentControllerTest {
         mockMvc
                 .perform(
                     MockMvcRequestBuilders
-                        .put(String.format("/assignments/finishedWork/%s", dto.getId()))
+                        .put(String.format("/assignments/%s/finishedWork", dto.getId()))
                         .content(TestUtils.asJsonString(dto))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -226,7 +226,7 @@ class AssignmentControllerTest {
         mockMvc
                 .perform(
                         MockMvcRequestBuilders
-                                .put(String.format("/assignments/finishedWork/%s", dto.getId()))
+                                .put(String.format("/assignments/%s/finishedWork", dto.getId()))
                                 .content(TestUtils.asJsonString(dto))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
@@ -264,7 +264,7 @@ class AssignmentControllerTest {
         mockMvc
                 .perform(
                         MockMvcRequestBuilders
-                                .put(String.format("/assignments/finishedWork/%s", dto.getId()))
+                                .put(String.format("/assignments/%s/finishedWork", dto.getId()))
                                 .content(TestUtils.asJsonString(dto))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
@@ -359,7 +359,7 @@ class AssignmentControllerTest {
                         MockMvcRequestBuilders
                                 .delete(String.format("/assignments/%s", dto.getId())))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isAccepted());
     }
 
     @Test
@@ -375,7 +375,7 @@ class AssignmentControllerTest {
                         MockMvcRequestBuilders
                                 .delete(String.format("/assignments/%s", dto.getId())))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isAccepted());
     }
 
     @Test

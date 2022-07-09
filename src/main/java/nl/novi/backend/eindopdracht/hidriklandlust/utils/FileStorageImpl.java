@@ -3,6 +3,7 @@ package nl.novi.backend.eindopdracht.hidriklandlust.utils;
 import nl.novi.backend.eindopdracht.hidriklandlust.exceptions.BadRequestException;
 import nl.novi.backend.eindopdracht.hidriklandlust.exceptions.InternalFailureException;
 import nl.novi.backend.eindopdracht.hidriklandlust.exceptions.RecordNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -20,12 +21,17 @@ import java.nio.file.Paths;
 public class FileStorageImpl implements FileStorage {
 
     private final Path root = Paths.get("uploads");
+
+    @Autowired
+
     @Override
     public void init() {
-        try {
-            Files.createDirectory(root);
-        } catch (IOException e) {
-            throw new InternalFailureException("Could not initialize folder for upload!");
+        if (!Files.exists(root)) {
+            try {
+                Files.createDirectory(root);
+            } catch (IOException e) {
+                throw new InternalFailureException("Could not initialize folder for upload!");
+            }
         }
     }
 
@@ -53,6 +59,7 @@ public class FileStorageImpl implements FileStorage {
             throw new InternalFailureException("Could not store the file. Error: " + e.getMessage());
         }
     }
+
     @Override
     public Resource load(String fileName, Long componentId) {
         Path directory = createDirectory(componentId);

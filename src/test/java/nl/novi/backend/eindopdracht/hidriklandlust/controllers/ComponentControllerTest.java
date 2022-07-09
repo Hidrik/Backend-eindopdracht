@@ -2,6 +2,7 @@ package nl.novi.backend.eindopdracht.hidriklandlust.controllers;
 
 import nl.novi.backend.eindopdracht.hidriklandlust.TestUtils;
 import nl.novi.backend.eindopdracht.hidriklandlust.dto.ComponentDto;
+import nl.novi.backend.eindopdracht.hidriklandlust.dto.ComponentSummaryDto;
 import nl.novi.backend.eindopdracht.hidriklandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.hidriklandlust.services.ComponentService;
 import nl.novi.backend.eindopdracht.hidriklandlust.services.CustomUserDetailsService;
@@ -14,10 +15,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNullApi;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static nl.novi.backend.eindopdracht.hidriklandlust.TestUtils.generateComponentDto;
+import static nl.novi.backend.eindopdracht.hidriklandlust.TestUtils.generateComponentSummaryDto;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -61,8 +67,8 @@ class ComponentControllerTest {
     @Test
     @WithMockUser(roles = admin)
     void getAllComponentsAsAdminSucceeds() throws Exception {
-        List<ComponentDto> dtos  = new ArrayList<>();
-        ComponentDto dto = generateComponentDto();
+        List<ComponentSummaryDto> dtos  = new ArrayList<>();
+        ComponentSummaryDto dto = generateComponentSummaryDto();
         dtos.add(dto);
 
         when(componentService.getComponentsDto()).thenReturn(dtos);
@@ -72,13 +78,10 @@ class ComponentControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].id", is(dto.getId().intValue())))
-                //.andExpect(MockMvcResultMatchers.jsonPath("$.[0].assignments", is(dto.getAssignments())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].price", is(dto.getPrice())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].stock", is(dto.getStock())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].fileName", is(dto.getFileName())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].articleNumber", is(dto.getArticleNumber())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].description", is(dto.getDescription())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].fileUrl", is(dto.getFileUrl())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].manufacturer", is(dto.getManufacturer())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].orderLink", is(dto.getOrderLink())));
     }
@@ -86,8 +89,8 @@ class ComponentControllerTest {
     @Test
     @WithMockUser(roles = user)
     void getAllComponentsAsUserSucceeds() throws Exception {
-        List<ComponentDto> dtos  = new ArrayList<>();
-        ComponentDto dto = generateComponentDto();
+        List<ComponentSummaryDto> dtos  = new ArrayList<>();
+        ComponentSummaryDto dto = generateComponentSummaryDto();
         dtos.add(dto);
 
         when(componentService.getComponentsDto()).thenReturn(dtos);
@@ -97,13 +100,10 @@ class ComponentControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].id", is(dto.getId().intValue())))
-                //.andExpect(MockMvcResultMatchers.jsonPath("$.[0].assignments", is(dto.getAssignments())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].price", is(dto.getPrice())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].stock", is(dto.getStock())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].fileName", is(dto.getFileName())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].articleNumber", is(dto.getArticleNumber())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].description", is(dto.getDescription())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].fileUrl", is(dto.getFileUrl())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].manufacturer", is(dto.getManufacturer())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].orderLink", is(dto.getOrderLink())));
     }
@@ -448,13 +448,13 @@ class ComponentControllerTest {
         MockMultipartFile file =
                 new MockMultipartFile("data", "filename.txt", "text/plain", "some xml".getBytes());
 
-        doNothing().when(componentService).saveFile(any(Long.class), any(MultipartFile.class));
+        when(componentService.saveFile(any(Long.class), any(MultipartFile.class))).thenReturn("URL");
 
         mockMvc.perform(MockMvcRequestBuilders
                         .multipart(String.format("/components/%s/file", dto.getId()))
                         .file("file", file.getBytes())
                         .characterEncoding("UTF-8"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.status().isCreated())
 
                 //Can't get file name returning to work
                 .andExpect(content().string("Uploaded file successfully: "));
@@ -467,13 +467,13 @@ class ComponentControllerTest {
         MockMultipartFile file =
                 new MockMultipartFile("data", "filename.txt", "text/plain", "some xml".getBytes());
 
-        doNothing().when(componentService).saveFile(any(Long.class), any(MultipartFile.class));
+        when(componentService.saveFile(any(), any())).thenReturn("URL");
 
         mockMvc.perform(MockMvcRequestBuilders
                         .multipart(String.format("/components/%s/file", dto.getId()))
                         .file("file", file.getBytes())
                         .characterEncoding("UTF-8"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.status().isCreated())
 
                 //Can't get file name returning to work
                 .andExpect(content().string("Uploaded file successfully: "));
@@ -513,8 +513,17 @@ class ComponentControllerTest {
 
         when(componentService.hasFile(any(Long.class))).thenReturn(true);
 
-        mockMvc.perform(MockMvcRequestBuilders
-                        .multipart(String.format("/components/%s/file", dto.getId()))
+        MockMultipartHttpServletRequestBuilder builder =
+                MockMvcRequestBuilders.multipart(String.format("/components/%s/file", dto.getId()));
+        builder.with(new RequestPostProcessor() {
+            @Override
+            public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+                request.setMethod("POST");
+                return request;
+            }
+        });
+
+        mockMvc.perform(builder
                         .file("file", file.getBytes())
                         .characterEncoding("UTF-8"))
                 .andExpect(MockMvcResultMatchers.status().isConflict())
@@ -523,8 +532,137 @@ class ComponentControllerTest {
                         .jsonPath("$", is("Component with id " + dto.getId() + " already has a file.")));
     }
 
-    // I have NO IDEA how to test the put-request for updating component files.
-    // This is because is use MockMvcRequestBuilders.multipart. I don't know how to set this request as post or put.
+    @Test
+    @WithMockUser(roles = admin)
+    void updateComponentFileAsAdminSucceeds() throws Exception {
+        ComponentDto dto = generateComponentDto();
+        MockMultipartFile file =
+                new MockMultipartFile("data", "filename.txt", "text/plain", "some xml".getBytes());
+
+        when(componentService.hasFile(any())).thenReturn(true);
+        when(componentService.saveFile(any(Long.class), any(MultipartFile.class))).thenReturn("URL");
+
+        MockMultipartHttpServletRequestBuilder builder =
+                MockMvcRequestBuilders.multipart(String.format("/components/%s/file", dto.getId()));
+        builder.with(new RequestPostProcessor() {
+            @Override
+            public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+                request.setMethod("PUT");
+                return request;
+            }
+        });
+
+        mockMvc.perform(builder
+                        .file("file", file.getBytes())
+                        .characterEncoding("UTF-8"))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+
+                //Can't get file name returning to work
+                .andExpect(content().string("Uploaded and updated file successfully: "));
+    }
+
+    @Test
+    @WithMockUser(roles = user)
+    void updateComponentFileAsUserSucceeds() throws Exception {
+        ComponentDto dto = generateComponentDto();
+        MockMultipartFile file =
+                new MockMultipartFile("data", "filename.txt", "text/plain", "some xml".getBytes());
+
+        when(componentService.hasFile(any())).thenReturn(true);
+        when(componentService.saveFile(any(), any())).thenReturn("URL");
+
+        MockMultipartHttpServletRequestBuilder builder =
+                MockMvcRequestBuilders.multipart(String.format("/components/%s/file", dto.getId()));
+        builder.with(new RequestPostProcessor() {
+            @Override
+            public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+                request.setMethod("PUT");
+                return request;
+            }
+        });
+
+        mockMvc.perform(builder
+                        .file("file", file.getBytes())
+                        .characterEncoding("UTF-8"))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+
+                //Can't get file name returning to work
+                .andExpect(content().string("Uploaded and updated file successfully: "));
+    }
+
+    @Test
+    void updateComponentFileUnauthorizedFails() throws Exception {
+        ComponentDto dto = generateComponentDto();
+        MockMultipartFile file =
+                new MockMultipartFile("data", "filename.txt", "text/plain", "some xml".getBytes());
+
+
+        MockMultipartHttpServletRequestBuilder builder =
+                MockMvcRequestBuilders.multipart(String.format("/components/%s/file", dto.getId()));
+        builder.with(new RequestPostProcessor() {
+            @Override
+            public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+                request.setMethod("PUT");
+                return request;
+            }
+        });
+
+        mockMvc.perform(builder
+                        .file("file", file.getBytes())
+                        .characterEncoding("UTF-8"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = admin)
+    void updateComponentFileAsAdminFailsNoFileAttached() throws Exception {
+        ComponentDto dto = generateComponentDto();
+
+        MockMultipartHttpServletRequestBuilder builder =
+                MockMvcRequestBuilders.multipart(String.format("/components/%s/file", dto.getId()));
+        builder.with(new RequestPostProcessor() {
+            @Override
+            public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+                request.setMethod("PUT");
+                return request;
+            }
+        });
+
+        mockMvc.perform(builder)
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.status().reason("Required request part 'file' is not present"));
+    }
+
+    @Test
+    @WithMockUser(roles = admin)
+    void updateComponentFileAsAdminThrowsRecordNotFoundExceptionNoFileAttached() throws Exception {
+        ComponentDto dto = generateComponentDto();
+        MockMultipartFile file =
+                new MockMultipartFile("data", "filename.txt", "text/plain", "some xml".getBytes());
+
+        when(componentService.hasFile(any(Long.class))).thenReturn(false);
+
+        MockMultipartHttpServletRequestBuilder builder =
+                MockMvcRequestBuilders.multipart(String.format("/components/%s/file", dto.getId()));
+        builder.with(new RequestPostProcessor() {
+            @Override
+            public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+                request.setMethod("PUT");
+                return request;
+            }
+        });
+
+        mockMvc.perform(builder
+                        .file("file", file.getBytes())
+                        .characterEncoding("UTF-8"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                //.andExpect(MockMvcResultMatchers.status().reason("Required request part 'file' is not present"));
+                .andExpect(MockMvcResultMatchers
+                        .jsonPath("$", is(String.format("Component with id %s has no file.", dto.getId() ))));
+    }
+
+
+
 
 
     @Test

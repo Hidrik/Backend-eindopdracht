@@ -298,7 +298,7 @@ class UserControllerTest {
 
         mockMvc
                 .perform(MockMvcRequestBuilders
-                        .post(String.format("/users/%s/authorities", generateUserDto().getUsername()))
+                        .put(String.format("/users/%s/authorities", generateUserDto().getUsername()))
                         .content(TestUtils.asJsonString(generateUserDto()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -345,7 +345,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isNoContent());
+                .andExpect(MockMvcResultMatchers.status().isAccepted());
     }
 
     @Test

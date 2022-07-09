@@ -97,7 +97,10 @@ class UserServiceImplTest {
 
         AssertionsForClassTypes.assertThat(receivedUserDto)
                 .usingRecursiveComparison()
+                .ignoringFields("password")
                 .isEqualTo(usersDto.get(0));
+
+        assertEquals("*****", receivedUserDto.getPassword());
     }
 
     @Test
@@ -124,7 +127,7 @@ class UserServiceImplTest {
         assertEquals(receivedDto.getEmail(), userDto.getEmail());
         assertEquals(receivedDto.getUsername(), userDto.getUsername());
         assertEquals(receivedDto.getEnabled(), userDto.getEnabled());
-        assertEquals(receivedDto.getPassword(), userDto.getPassword());
+        assertEquals(receivedDto.getPassword(), "*****");
 
         //Can't assertEquals the Account due to different instances
     }
@@ -168,7 +171,7 @@ class UserServiceImplTest {
 
         when(userRepository.existsById(dto.getUsername())).thenReturn(false);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
 
         String generatedUsername = userService.createUser(dto).getUsername();
 
@@ -183,7 +186,7 @@ class UserServiceImplTest {
 
         when(userRepository.existsById(dto.getUsername())).thenReturn(false);
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
 
         assertThrows(BadRequestException.class, () -> userService.createUser(dto));
     }

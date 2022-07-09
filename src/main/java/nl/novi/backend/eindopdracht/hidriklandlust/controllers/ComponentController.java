@@ -1,6 +1,7 @@
 package nl.novi.backend.eindopdracht.hidriklandlust.controllers;
 
 import nl.novi.backend.eindopdracht.hidriklandlust.dto.ComponentDto;
+import nl.novi.backend.eindopdracht.hidriklandlust.dto.ComponentSummaryDto;
 import nl.novi.backend.eindopdracht.hidriklandlust.exceptions.AlreadyExistsException;
 import nl.novi.backend.eindopdracht.hidriklandlust.exceptions.RecordNotFoundException;
 import nl.novi.backend.eindopdracht.hidriklandlust.services.ComponentService;
@@ -23,8 +24,8 @@ public class ComponentController {
     ComponentService componentService;
 
     @GetMapping(value = "")
-    public ResponseEntity<List<ComponentDto>> getComponents() {
-        List<ComponentDto> components = componentService.getComponentsDto();
+    public ResponseEntity<List<ComponentSummaryDto>> getComponents() {
+        List<ComponentSummaryDto> components = componentService.getComponentsDto();
 
         return ResponseEntity.ok().body(components);
     }
@@ -71,19 +72,25 @@ public class ComponentController {
 
 
     @PostMapping(value = "/{id}/file")
-    public ResponseEntity<String> saveComponentFile(@PathVariable(value = "id") Long id, @RequestParam("file") MultipartFile file){
-        if (componentService.hasFile(id)) throw new AlreadyExistsException("Component with id " + id + " already has a file.");
-        componentService.saveFile(id, file);
+    public ResponseEntity<String> saveComponentFile(@PathVariable(value = "id") Long id, @RequestParam("file") MultipartFile file) {
+        if (componentService.hasFile(id))
+            throw new AlreadyExistsException("Component with id " + id + " already has a file.");
+        String url = componentService.saveFile(id, file);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/")
+                .buildAndExpand(url).toUri();
 
-        return ResponseEntity.ok().body("Uploaded file successfully: " + file.getOriginalFilename());
+        return ResponseEntity.created(location).body("Uploaded file successfully: " + file.getOriginalFilename());
     }
 
     @PutMapping(value = "/{id}/file")
-    public ResponseEntity<String> updateComponentFile(@PathVariable(value = "id") Long id, @RequestParam("file") MultipartFile file){
-        if (!componentService.hasFile(id)) throw new RecordNotFoundException("Component with id " + id + " has no file.");
-        componentService.saveFile(id, file);
+    public ResponseEntity<String> updateComponentFile(@PathVariable(value = "id") Long id, @RequestParam("file") MultipartFile file) {
+        if (!componentService.hasFile(id))
+            throw new RecordNotFoundException("Component with id " + id + " has no file.");
+        String url = componentService.saveFile(id, file);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/")
+                .buildAndExpand(url).toUri();
 
-        return ResponseEntity.ok().body("Uploaded and updated file successfully: " + file.getOriginalFilename());
+        return ResponseEntity.created(location).body("Uploaded and updated file successfully: " + file.getOriginalFilename());
     }
 
     @DeleteMapping(value = "/{id}/file")

@@ -34,12 +34,10 @@ public class Assignment extends AbstractJobData {
 
     @JsonIgnore
     @ManyToOne()
-    @JoinColumn(name="project_id", nullable=false)
     private Project project;
 
     @JsonIgnore
     @ManyToOne()
-    @JoinColumn(name="account_id")
     private Account account;
 
     public Long getId() {
@@ -113,7 +111,7 @@ public class Assignment extends AbstractJobData {
     @Override
     public Integer getCosts() {
         int cost = 0;
-        if (components.size() == 0) return 0;
+        if (components.isEmpty()) return 0;
 
         for (Component comp : components) {
             Integer amountOfCurrentComponent = amountOfComponentById.get(comp.getId());

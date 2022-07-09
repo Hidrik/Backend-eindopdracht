@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 public interface ComponentService {
-    List<ComponentDto> getComponentsDto();
+    List<ComponentSummaryDto> getComponentsDto();
 
     ComponentDto getComponentDto(Long id);
 
@@ -32,7 +32,7 @@ public interface ComponentService {
 
     Boolean hasFile(Long id);
 
-    void saveFile(Long id, MultipartFile file);
+    String saveFile(Long id, MultipartFile file);
 
     Resource loadFile(Long id);
 
@@ -43,6 +43,8 @@ public interface ComponentService {
     String deleteFileInfo(Component component);
 
     Component toComponent(ComponentDto dto);
+
+    List<ComponentSummaryDto> toComponentSummaryDto(List<Component> components);
 
     ComponentSummaryDto toComponentSummaryDto(Component component);
 

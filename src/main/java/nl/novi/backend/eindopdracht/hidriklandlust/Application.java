@@ -10,19 +10,19 @@ import javax.annotation.Resource;
 @SpringBootApplication
 public class Application implements CommandLineRunner {
 
-	@Resource
-	FileStorage storageService;
+    @Resource
+    FileStorage storageService;
 
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 
 
-	//At startup => Initialize root map and delete all existing files
-	@Override
-	public void run(String... arg) {
-		storageService.deleteAll();
-		storageService.init();
-	}
+    //At startup => Initialize root map and delete all existing files
+    @Override
+    public void run(String... arg) {
+        storageService.deleteAll();
+        storageService.init();
+    }
 
 }

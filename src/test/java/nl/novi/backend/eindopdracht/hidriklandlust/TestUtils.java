@@ -230,4 +230,17 @@ public class TestUtils {
         return dto;
     }
 
+    public static ComponentSummaryDto generateComponentSummaryDto() {
+        ComponentSummaryDto dto = new ComponentSummaryDto();
+        dto.setDescription("test test test");
+        dto.setId(1L);
+        dto.setPrice(1000);
+        dto.setStock(100);
+        dto.setArticleNumber("test-test-test");
+        dto.setManufacturer("test company");
+        dto.setOrderLink("http://test.test.nl/");
+
+        return dto;
+    }
+
 }

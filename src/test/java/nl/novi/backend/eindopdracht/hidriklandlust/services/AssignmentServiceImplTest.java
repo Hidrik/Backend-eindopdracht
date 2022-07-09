@@ -23,8 +23,7 @@ import static nl.novi.backend.eindopdracht.hidriklandlust.TestUtils.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class AssignmentServiceImplTest {
@@ -107,7 +106,7 @@ class AssignmentServiceImplTest {
 
 
         when(assignmentRepository.findById(any(Long.class))).thenReturn(optionalAssignment);
-        when(assignmentRepository.save(any(Assignment.class))).thenReturn(assignment);
+        when(assignmentRepository.save(any(Assignment.class))).thenAnswer(i -> i.getArguments()[0]);
 
         assertThat(assignmentService.updateAssignment(dto.getId(), dto))
                 .usingRecursiveComparison()
@@ -137,7 +136,7 @@ class AssignmentServiceImplTest {
         dto.setDescriptionFinishedWork("Test 4 5 6");
 
         when(assignmentRepository.findById(any(Long.class))).thenReturn(optionalAssignment);
-        when(assignmentRepository.save(any(Assignment.class))).thenReturn(assignment);
+        when(assignmentRepository.save(any(Assignment.class))).thenAnswer(i -> i.getArguments()[0]);
 
 
         AssignmentSummaryDto returnedDto = assignmentService.updateAssignmentFinishedWork(dto.getId(), dto);
@@ -183,7 +182,7 @@ class AssignmentServiceImplTest {
     void savingAssignmentSucceeds() {
         Assignment assignment = generateAssignment();
 
-        when(assignmentRepository.save(any(Assignment.class))).thenReturn(assignment);
+        when(assignmentRepository.save(any(Assignment.class))).thenAnswer(i -> i.getArguments()[0]);
 
         assertThat(assignmentService.saveAssignment(assignment))
                 .usingRecursiveComparison()
@@ -203,36 +202,47 @@ class AssignmentServiceImplTest {
     @Test
     void deleteAssignmentSucceeds() {
         Assignment assignment = generateAssignment();
+        Project project = new Project();
+        assignment.setProject(project);
+        project.addAssignment(assignment);
         Optional<Assignment> optionalAssignment = Optional.of(assignment);
 
         when(assignmentRepository.findById(any(Long.class))).thenReturn(optionalAssignment);
-        when(projectService.saveProject(any(Project.class))).thenReturn(assignment.getProject());
+        when(projectService.getProjectFromProjectCode(any())).thenReturn(project);
+        when(projectService.saveProject(any(Project.class))).thenReturn(project);
 
         assertDoesNotThrow(() -> assignmentService.deleteAssignment(assignment.getId()));
     }
 
     @Test
-    void deleteAssignmentThrowsInternalFailureExceptionCantSaveProject() {
+    void deleteAssignmentThrowsInternalFailureExceptionCantDeleteAssignment() {
         Assignment assignment = generateAssignment();
+        Project project = new Project();
+        assignment.setProject(project);
+        project.addAssignment(assignment);
         Optional<Assignment> optionalAssignment = Optional.of(assignment);
 
         when(assignmentRepository.findById(any(Long.class))).thenReturn(optionalAssignment);
-        when(projectService.saveProject(any(Project.class))).thenThrow(InternalFailureException.class);
+        when(projectService.getProjectFromProjectCode(any())).thenReturn(project);
+        when(projectService.saveProject(any(Project.class))).thenAnswer(i -> i.getArguments()[0]);
+        doThrow(new InternalFailureException("test")).when(assignmentRepository).delete(any());
 
         assertThrows(InternalFailureException.class, () -> assignmentService.deleteAssignment(assignment.getId()));
     }
 
     @Test
     void addAssignmentToProjectSucceeds() {
-        Assignment savedAssignment = generateAssignment();
         Project project = generateProject();
         AssignmentDto dtoSendToMethod = generateAssignmentDto();
         AssignmentDto dtoReturnedFromMethod = generateAssignmentDto();
-
-        savedAssignment.setProject(project);
+        dtoReturnedFromMethod.setHoursWorked((short) 0);
+        dtoReturnedFromMethod.setDescriptionFinishedWork("");
+        dtoReturnedFromMethod.setProgressPercentage((byte) 0);
+        dtoReturnedFromMethod.setAssignmentCode("test-test-1");
 
         when(projectService.getProjectFromProjectCode(any(String.class))).thenReturn(project);
-        when(assignmentRepository.save(any(Assignment.class))).thenReturn(savedAssignment);
+        when(assignmentRepository.save(any(Assignment.class))).thenAnswer(i -> i.getArguments()[0]);
+
 
         assertThat(assignmentService.addAssignmentToProject(project.getProjectCode(), dtoSendToMethod))
                 .usingRecursiveComparison()
@@ -254,7 +264,7 @@ class AssignmentServiceImplTest {
 
         when(assignmentRepository.findById(any(Long.class))).thenReturn(optionalAssignment);
         when(componentService.addComponentToAssignment(any(Assignment.class), any(Long.class), any(Integer.class))).thenReturn(component);
-        when(assignmentRepository.save(any(Assignment.class))).thenReturn(assignment);
+        when(assignmentRepository.save(any(Assignment.class))).thenAnswer(i -> i.getArguments()[0]);
 
         assertThat(assignmentService.addComponentToAssignment(amount, assignment.getId(), component.getId()))
                 .usingRecursiveComparison()
@@ -270,7 +280,7 @@ class AssignmentServiceImplTest {
         Long accountId = assignment.getAccount().getId();
 
         when(assignmentRepository.findById(any(Long.class))).thenReturn(optionalAssignment);
-        when(assignmentRepository.save(any(Assignment.class))).thenReturn(assignment);
+        when(assignmentRepository.save(any(Assignment.class))).thenAnswer(i -> i.getArguments()[0]);
         doNothing().when(accountService).removeAssignmentFromAccount(assignment, accountId);
 
         assertDoesNotThrow(() -> assignmentService.removeAccountFromAssignment(assignment.getId(), accountId));

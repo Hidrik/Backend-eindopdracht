@@ -24,6 +24,7 @@ public class Project extends AbstractJobData {
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER)
+    @JoinColumn(name = "project_id", nullable = false, insertable = false, updatable = false)
     private final Set<Assignment> assignments = new HashSet<>();
 
     @JsonIgnore
@@ -45,6 +46,7 @@ public class Project extends AbstractJobData {
     public String getProjectCode() {
         return projectCode;
     }
+
     public void setProjectCode(String projectCode) {
         this.projectCode = projectCode;
     }
@@ -52,17 +54,23 @@ public class Project extends AbstractJobData {
     public Set<Assignment> getAssignments() {
         return this.assignments;
     }
+
     public void addAssignment(Assignment assignment) {
         this.assignments.add(assignment);
     }
+
     public void removeAssignment(Assignment assignment) {
         this.assignments.remove(assignment);
     }
 
-    public Set<Account> getAccounts() { return this.accounts; }
+    public Set<Account> getAccounts() {
+        return this.accounts;
+    }
+
     public void addAccount(Account account) {
         this.accounts.add(account);
     }
+
     public void removeAccount(Account account) {
         this.accounts.remove(account);
     }

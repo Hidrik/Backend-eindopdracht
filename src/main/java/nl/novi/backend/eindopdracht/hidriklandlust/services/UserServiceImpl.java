@@ -44,6 +44,13 @@ public class UserServiceImpl implements UserService {
         return maskPassword(collection);
     }
 
+    public List<UserDto> maskPassword(List<UserDto> dtos) {
+        for (UserDto dto : dtos) {
+            dto.setPassword("*****");
+        }
+        return dtos;
+    }
+
     public UserDto getUserDto(String username) {
 
         User user = getUser(username);
@@ -65,7 +72,7 @@ public class UserServiceImpl implements UserService {
         return maskPassword(toUserDto(newUser));
     }
 
-    public User toUser(UserDto userDto){
+    public User toUser(UserDto userDto) {
 
         var user = new User();
 
@@ -79,6 +86,12 @@ public class UserServiceImpl implements UserService {
         user.setAccount(accountService.toAccount(userDto.getAccount()));
 
         return user;
+    }
+
+    @Override
+    public UserDto maskPassword(UserDto dto) {
+        dto.setPassword("*****");
+        return dto;
     }
 
     public void deleteUser(String username) {
@@ -104,11 +117,13 @@ public class UserServiceImpl implements UserService {
 
         if (newPassword != null) user.setPassword(passwordEncoder.encode(newPassword));
         if (newEmail != null) {
-            if (emailExists(newEmail)) throw new AlreadyExistsException(String.format("Email %s already exists!", newEmail));
+            if (emailExists(newEmail))
+                throw new AlreadyExistsException(String.format("Email %s already exists!", newEmail));
             user.setEmail(newEmail);
         }
         if (newUsername != null) {
-            if (!userExists(newUsername)) throw new AlreadyExistsException(String.format("Username %s already exists!", newUsername));
+            if (!userExists(newUsername))
+                throw new AlreadyExistsException(String.format("Username %s already exists!", newUsername));
             user.setUsername(newUser.getUsername());
         }
 
@@ -125,7 +140,7 @@ public class UserServiceImpl implements UserService {
         return userDto.getAuthorities();
     }
 
-    public UserDto toUserDto(User user){
+    public UserDto toUserDto(User user) {
 
         var dto = new UserDto();
 
@@ -143,7 +158,8 @@ public class UserServiceImpl implements UserService {
         User user = getUser(username);
         Authority addAuthority = new Authority(username, authority);
 
-        if (authorityAlreadyExists(user, addAuthority)) throw new AlreadyExistsException(String.format("User %s already has authority %s", username, authority));
+        if (authorityAlreadyExists(user, addAuthority))
+            throw new AlreadyExistsException(String.format("User %s already has authority %s", username, authority));
         user.addAuthority(addAuthority);
         saveUser(user);
     }
@@ -179,19 +195,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsById(username);
     }
 
-    public List<UserDto> maskPassword(List<UserDto> dtos) {
-        for (UserDto dto : dtos) {
-            dto.setPassword("*****");
-        }
-        return dtos;
-    }
-
-    @Override
-    public UserDto maskPassword(UserDto dto) {
-        dto.setPassword("*****");
-        return dto;
-    }
-
     @Override
     public User saveUser(User user) {
         try {
@@ -200,4 +203,5 @@ public class UserServiceImpl implements UserService {
             throw new InternalFailureException(String.format("Can not save user %s", user.getUsername()));
         }
     }
+
 }
