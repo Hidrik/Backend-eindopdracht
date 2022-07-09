@@ -1,7 +1,7 @@
 # Installatiehandleiding
 
 In deze repository is de backend spring boot server van Hidrik Landlust te vinden.
-Deze is ontwikkeld voor de opleiding backend developer van Novi Hogeschool.
+Deze is ontwikkeld voor de opleiding backend ontwikkelaar van Novi Hogeschool.
 
 ## Inhoudsopgave
 
@@ -11,8 +11,9 @@ Deze is ontwikkeld voor de opleiding backend developer van Novi Hogeschool.
 4. [Klaarmaken voor productie](#H4)
 5. [Start applicatie](#H5)
 6. [Endpoints](#H6)
+7. [Dependencies](#H7)
 
-## 1. Inleiding <div id="H1"></div>
+<h1 id = "H1">1. Inleiding</h1>
 De server is de backend van een projectbeheersysteem. De server is als RESTful API ontwikkeld.
 In dit systeem kunnen projecten, accounts, opdrachten en componenten aangemaakt worden.
 Vervolgens kunnen personen (accounts) aan projecten worden toegewezen en kunnen opdrachten bij projecten
@@ -24,7 +25,7 @@ moeten worden. Het kan zijn dat de applicatie meteen in productie moet, daarvoor
 in hoofdstuk 4 te lezen. Als dit gedaan is, dan kan de applicatie gestart worden. Dit is te vinden in hoofdstuk 5.
 Tot slot zijn in hoofdstuk 6 de endpoints te vinden met hierbij voorbeelden van data (te verzenden of te ontvangen).
 
-## 2. Benodigde programma's <div id="H2"></div>
+<h1 id = "H2">2. Benodigde programma's </h1>
 Om de applicatie te kunnen starten, zijn enkele programma's nodig. Deze zijn eerst opgesomd. Vervolgens zijn er enkele programma's
 handig bij het doorontwikkelen van deze applicatie. Die zijn daaronder te vinden. Tot slot is weergegeven op welke besturingssystemen
 de applicatie gestart kan worden.
@@ -51,6 +52,7 @@ de applicatie gestart kan worden.
 - Mac OS X (64 bit)
 
 
+<h1 id = "H3"> </h1>
 ## 3. Installatie instructies <div id="H3"></div>
 De programma's die benoemd zijn in het hoofdstuk hiervoor, moeten geïnstalleerd zijn. In dit hoofdstuk zijn de installatie instructies
 te vinden van deze programma's. Bij het installeren van de PostgreSQL database moet wat ingesteld worden.
@@ -152,7 +154,7 @@ De endpoints kunnen goed getest worden met Postman. Hieronder zijn de instructie
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/19114410-9a50fcb2-1124-41ca-bba4-be08cb65a12d?action=collection%2Ffork&collection-url=entityId%3D19114410-9a50fcb2-1124-41ca-bba4-be08cb65a12d%26entityType%3Dcollection%26workspaceId%3Dce474eb5-ca19-4bb7-be9f-d9cbf412aadd)
 
-## 4. Klaarmaken voor productie  <div id="H4"></div>
+<h1 id = "H4">4. Klaarmaken voor productie</h1>
 In deze paragraaf is te lezen hoe de server productieklaar gemaakt kan worden.
 Het kan namelijk zijn dat de database op een andere server draait dan de applicatie. Bij het ontwikkelen
 worden de database-tabellen bij het opstarten aangemaakt en bij het stoppen verwijderd (create-drop). Dit is in productie **NIET** gewenst.
@@ -162,7 +164,7 @@ Voer onderstaande stappen uit. Als dit niet gedaan wordt, kan het zijn dat de da
 - Verander de volgende variabele in `application.properties` aan naar `validate`:
   - `spring.jpa.hibernate.ddl-auto=create-drop`
 - Geeft deze een exceptie => voer stap A uit. Voer anders stap B uit.
-- A: Als er nog geen tabellen in de database zijn aangemaak:
+- A: Als er nog geen tabellen in de database zijn aangemaakt:
   - Let op: deze stap overschrijft alle bestaande data in de database! Bij twijfel => eerst navragen.
   - Verander de volgende variabele in `application.properties` naar `create` en start de server:
     - `spring.jpa.hibernate.ddl-auto=create-drop`
@@ -178,7 +180,7 @@ Voer onderstaande stappen uit. Als dit niet gedaan wordt, kan het zijn dat de da
   - Het kan ook zijn dat er geen gebruik gemaakt wordt van een specifieke poort omdat alles goed geforward wordt, in dit geval
 geen poort aangeven.
 
-## 5 Start applicatie <div id="H4"></div>
+<h1 id = "H5">5. Start applicatie </h1>
 In dit hoofdstuk is te lezen hoe de applicatie gestart kan worden. Eerst is benoemd hoe de database gestart kan worden en
 vervolgens is te lezen hoe m.b.v. Maven de applicatie gestart kan worden.
 
@@ -201,19 +203,23 @@ Nu de database gestart en de juiste info aangemaakt is, kan de server gestart wo
 
 ### 5.2 Start server
 Hieronder is te lezen hoe de server gestart kan worden.
+- Open de terminal 
 - Ga naar de map waar deze repository staat opgeslagen
-- Open de terminal en start de java applicatie met het volgende commando:
+- Start de java applicatie met het volgende commando:
   - Commando: `mvn spring-boot:run`
   - Opmerking: Dit moet vanuit de map waar de POM.xml ook staat opgeslagen.
 - De server kan vervolgens gestopt worden door vanuit de terminal CRTL + C in te drukken.
 
 De server is nu gestart op het volgende adres: https://localhost:8443/
 
-
-## 6. Endpoints <div id="H5"></div>
+<h1 id = "H6">6. Endpoints  </h1>
 In dit hoofdstuk zijn alle endpoints te vinden. Daarbij zijn voorbeelden van te ontvangen en verzenden data gevoegd.
 De dataoverdracht gaat m.b.v. JSON objecten. De authorizatie gaat via bearer tokens. Bij alle endpoints behalve /authenticate moet
 deze token meegestuurd worden. Aan de hand hiervan wordt bepaald of het om een `USER` of `ADMIN` gaat.
+
+Inloggegevens van de standaard admin gebruiker:
+- Username: `landlust`
+- Password: `landlust`
 
 ### 6.1 Authenticatie
 - #### Login
@@ -582,10 +588,10 @@ deze token meegestuurd worden. Aan de hand hiervan wordt bepaald of het om een `
     - Gebruiker bestaat
     - Nieuw email bestaat nog niet
   - Body: Eén van beide of beide
-    ```java
+    ```
       {"email" : "landlust@landlust.eu"}
     ```
-    ```java
+    ```
       {"password" : "landlust"}
     ```
   - Response: `202 ACCEPTED`
@@ -791,8 +797,8 @@ deze token meegestuurd worden. Aan de hand hiervan wordt bepaald of het om een `
   - Response: `202 ACCEPTED`
 
 - #### Wijs een gebruiker toe aan een opdracht
-  - Request: `GET`
-  - Endpoint: `/assignments`
+  - Request: `PUT`
+  - Endpoint: `/assignments/{id}/accounts/{accountId}`
   - Gebruiker: `USER`, `ADMIN`
   - Requirements: 
     - Gebruiker bestaat
@@ -807,7 +813,7 @@ deze token meegestuurd worden. Aan de hand hiervan wordt bepaald of het om een `
   - Requirements: 
     - Gebruiker bestaat
     - Opdracht bestaat
-    - Gebruiker is toegezen aan de opdracht
+    - Gebruiker is toegewezen aan de opdracht
   - Response: `200 OK`
 
 ### 6.5 Componenten
@@ -970,7 +976,7 @@ deze token meegestuurd worden. Aan de hand hiervan wordt bepaald of het om een `
     - Component heeft nog geen file
   - Body: `form-data`
     - file => MultipartFile. Dit is een file die toegevoegd is door een `form` in HTML.
-  - Response: `200 OK` `Uploaded file successfully: {filename.extension}`
+  - Response: `201 CREATED` `Uploaded file successfully: {filename.extension}`
 
 - #### Verander het toegevoegde bestand
   - Request: `PUT`
@@ -981,7 +987,7 @@ deze token meegestuurd worden. Aan de hand hiervan wordt bepaald of het om een `
     - Component heeft al een file toegewezen.
   - Body: `form-data`
     - file => MultipartFile. Dit is een file die toegevoegd is door een `form` in HTML.
-  - Response: `200 OK` `Uploaded and updated file successfully: {filename.extension}`
+  - Response: `201 CREATED` `Uploaded and updated file successfully: {filename.extension}`
 
 - #### Verwijder het toegevoegde bestand
   - Request: `DELETE`
@@ -1075,3 +1081,17 @@ deze token meegestuurd worden. Aan de hand hiervan wordt bepaald of het om een `
     "lastName": "Landlust",
     "employeeFunction": "Schoonmaker"
     }
+
+<h1 id = "H7">7. Dependencies </h1>
+De volgende dependencies zijn gebruikt voor deze applicatie. Hierbij
+zijn dependencies compatible met Spring Boot versie 2.7.0.
+
+- Spring boot starter web
+- Spring boot starter test
+- postgreSQL
+- Spring boot starter data JPA
+- jsonwebtoken
+- Spring boot starter security
+- Spring security test
+- json path
+- Spring boot starter validation
